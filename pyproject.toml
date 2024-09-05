@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "crossworldbot"
+version = "0.2.0"
+description = "/"
+authors = ["AleksgGin"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+aiogram = "^3.11.0"
+pydantic-settings = "^2.4.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
