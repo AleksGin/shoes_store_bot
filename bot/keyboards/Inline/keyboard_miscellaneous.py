@@ -13,24 +13,16 @@ def instruction_button() -> InlineKeyboardMarkup:
         )
     )
 
-    return builder.as_markup()
+    return builder.as_markup(resize_keyboard=True)
 
 
-# def reviews_button() -> InlineKeyboardMarkup:
-#     builder = InlineKeyboardBuilder()
-#     builder.row(
-#         InlineKeyboardButton(text=Misc.reviews, url="https://t.me/crswrld_comment")
-#     )
-
-#     return builder.as_markup()
-
-
-def delivery_button() -> InlineKeyboardMarkup:
+def inline_delivery_button() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.row(
         InlineKeyboardButton(
-            text=Misc.delivery_status_order, callback_data="delivery_status_check"
+            text=Misc.inline_button_status_check_text,
+            callback_data="delivery_status_check",
         )
     )
 
-    return builder.as_markup()
+    return builder.as_markup(resize_keyboard=True)

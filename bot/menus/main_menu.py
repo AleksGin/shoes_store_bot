@@ -8,4 +8,3 @@ class MainMenu:
     delivery_status = "👀Статус моего заказа"
     back_to_main_menu = "🏠На главную"
     main_menu = "<b>🏠Главное меню:</b>"
-

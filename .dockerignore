@@ -1,0 +1,8 @@
+__pycache__
+creds.json
+.git
+.gitignore
+.venv
+.vscode
+crossworld_bot.code-workspace
+

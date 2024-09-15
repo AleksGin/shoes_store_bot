@@ -1,22 +1,22 @@
-from email import message
+from pathlib import Path
+from typing import Callable
+
 from aiogram import Bot
+from aiogram.fsm.context import FSMContext
 from aiogram.types import (
-    Message,
-    InlineKeyboardMarkup,
-    ReplyKeyboardMarkup,
     CallbackQuery,
     FSInputFile,
+    InlineKeyboardMarkup,
+    Message,
+    ReplyKeyboardMarkup,
 )
 
-from pathlib import Path
-
-
-from bot.menus.clothes import Clothes
 from bot.menus.miscellaneous import Misc
+from bot.menus.order import Order
 
 
 class MessageService:
-    def __init__(self, bot: Bot):
+    def __init__(self, bot: Bot) -> None:
         self.bot = bot
 
     async def send_message(
@@ -42,62 +42,47 @@ class MessageService:
                 disable_web_page_preview=disable_web_page_preview,
             )
 
-    async def callback_action(
+    async def calculate_callback_action(
         self,
         callback: CallbackQuery,
-        clothe_name: str,
         path: str | Path,
+        clothe_name: str | None = None,
         keyboard: ReplyKeyboardMarkup | InlineKeyboardMarkup | None = None,
     ) -> Message:
-        await self.bot.edit_message_caption(
-            chat_id=callback.from_user.id,
-            message_id=callback.message.message_id,
-            caption=f"<b>Выбрано: {clothe_name}</b>",
-        )
-        await self.bot.send_photo(
+        if callback.message is not None:
+            await self.bot.edit_message_caption(
+                chat_id=callback.from_user.id,
+                message_id=callback.message.message_id,
+                caption=Misc.selected_type.format(clothe_name),
+            )
+        return await self.bot.send_photo(
             callback.from_user.id,
             FSInputFile(path=path),
             reply_markup=keyboard,
+            caption=Order.ask_for_amount_text,
         )
-        return await self.bot.send_message(callback.from_user.id, Misc.conversion_text)
-    
-    
-    
 
-        # return await self.bot.send_message(callback.from_user.id, Misc.wrong)
-
-    
-
-
-    # async def send_message(
-    #     self,
-    #     message: Message,
-    #     text: str | None = None,
-    #     keyboard: InlineKeyboardMarkup | ReplyKeyboardMarkup | None = None,
-    #     disable_web_page_preview: bool = False,
-    # ) -> Message:
-    #     if text:
-    #         return await message.answer(
-    #             text,
-    #             reply_markup=keyboard,
-    #             disable_web_page_preview=disable_web_page_preview,
-    #         )
-    #     return await message.answer(
-    #         "",
-    #         reply_markup=keyboard,
-    #         disable_web_page_preview=disable_web_page_preview,
-    #     )
-
-    # async def send_pic_and_cap(
-    #     self,
-    #     caption: str,
-    #     path: str | Path,
-    #     chat_id: int | str,
-    #     keyboard: ReplyKeyboardMarkup | InlineKeyboardMarkup | None = None,
-    # ) -> Message:
-    #     return await self.bot.send_photo(
-    #         chat_id=chat_id,
-    #         photo=FSInputFile(path=path),
-    #         caption=caption,
-    #         reply_markup=keyboard,
-    #     )
+    async def order_handle_callback(
+        self,
+        callback: CallbackQuery,
+        action: Callable | None = None,
+        state: FSMContext | None = None,
+    ) -> None:
+        if isinstance(callback.message, Message):
+            if state and action:
+                await self.bot.delete_message(
+                    chat_id=callback.from_user.id,
+                    message_id=callback.message.message_id,
+                )
+                await action(callback.message, state)
+            elif not state and action:
+                await self.bot.delete_message(
+                    chat_id=callback.from_user.id,
+                    message_id=callback.message.message_id,
+                )
+                await action(callback.message)
+            elif not state and not action:
+                await self.bot.delete_message(
+                    chat_id=callback.from_user.id,
+                    message_id=callback.message.message_id,
+                )
