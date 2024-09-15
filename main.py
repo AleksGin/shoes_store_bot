@@ -22,18 +22,18 @@ async def main() -> None:
     )
 
     cross_table = CrossworldTable(
-        config.cred_file.get_secret_value(), config.url_table.get_secret_value()
+        cred_file=config.cred_file.get_secret_value(), sheet_url=config.url_table.get_secret_value()
     )
-    message_service = MessageService(bot)
-    cross_service = CrossworldService(message_service, cross_table)
+    message_service = MessageService(bot=bot)
+    cross_service = CrossworldService(message_service=message_service, cross_table=cross_table)
 
     dp = Dispatcher()
 
     dp.message.middleware(
-        ServiceMiddleware(cross_service, message_service, cross_table)
+        ServiceMiddleware(cross_service=cross_service, message_service=message_service, cross_table=cross_table)
     )
     dp.callback_query.middleware(
-        ServiceMiddleware(cross_service, message_service, cross_table)
+        ServiceMiddleware(cross_service=cross_service, message_service=message_service, cross_table=cross_table)
     )
 
     dp.include_routers(handlers.router, callback_router)

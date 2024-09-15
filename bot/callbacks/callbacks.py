@@ -14,7 +14,7 @@ router = Router()
 async def shoes_button(
     callback: CallbackQuery, service: CrossworldService, state: FSMContext
 ) -> None:
-    await service.calculate(callback, Clothes.shoes, PathsImages.SHOES_CALCULATE, state)
+    await service.calculate(callback=callback, clothe_name=Clothes.shoes, img_path=PathsImages.SHOES_CALCULATE, state=state)
 
 
 @router.callback_query(F.data == "accessories")
@@ -22,7 +22,7 @@ async def accessories_button(
     callback: CallbackQuery, service: CrossworldService, state: FSMContext
 ) -> None:
     await service.calculate(
-        callback, Clothes.accessories, PathsImages.ACCESSORIES_CALCULATE, state
+        callback=callback, clothe_name=Clothes.accessories, img_path=PathsImages.ACCESSORIES_CALCULATE, state=state
     )
 
 
@@ -31,7 +31,7 @@ async def jackets_button(
     callback: CallbackQuery, service: CrossworldService, state: FSMContext
 ) -> None:
     await service.calculate(
-        callback, Clothes.jackets, PathsImages.JACKETS_CALCULATE, state
+        callback=callback, clothe_name=Clothes.jackets, img_path=PathsImages.JACKETS_CALCULATE, state=state
     )
 
 
@@ -39,7 +39,7 @@ async def jackets_button(
 async def hoodi_button(
     callback: CallbackQuery, service: CrossworldService, state: FSMContext
 ) -> None:
-    await service.calculate(callback, Clothes.hoodi, PathsImages.HOODI_CALCULATE, state)
+    await service.calculate(callback=callback, clothe_name=Clothes.hoodi, img_path=PathsImages.HOODI_CALCULATE, state=state)
 
 
 @router.callback_query(F.data == "t-shirt")
@@ -47,7 +47,7 @@ async def t_shirt_button(
     callback: CallbackQuery, service: CrossworldService, state: FSMContext
 ) -> None:
     await service.calculate(
-        callback, Clothes.t_shirt, PathsImages.T_SHITS_CALCULATE, state
+        callback=callback, clothe_name=Clothes.t_shirt, img_path=PathsImages.T_SHITS_CALCULATE, state=state
     )
 
 
@@ -55,32 +55,32 @@ async def t_shirt_button(
 async def make_order_button(
     callback: CallbackQuery, service: CrossworldService, state: FSMContext
 ) -> None:
-    await service.make_order_action(callback, state)
+    await service.make_order_action(callback=callback, state=state)
 
 
 @router.callback_query(F.data == "not_make_order")
 async def not_make_order_button(
     callback: CallbackQuery, service: CrossworldService, state: FSMContext
 ) -> None:
-    await service.not_make_order_action(callback, state)
+    await service.not_make_order_action(callback=callback, state=state)
 
 
 @router.callback_query(F.data == "calculate_again")
 async def calculate_again_button(
     callback: CallbackQuery, service: CrossworldService
 ) -> None:
-    await service.calculate_again_action(callback)
+    await service.calculate_again_action(callback=callback)
 
 
 @router.callback_query(F.data == "delivery_status_check")
 async def delivery_status_check_button(
     callback: CallbackQuery, service: CrossworldService, state: FSMContext
 ) -> None:
-    await service.callback_delivery_status(callback, state)
+    await service.callback_delivery_status(callback=callback, state=state)
 
 
 @router.callback_query(PriceCalculationStates.waiting_for_order_buttons)
 async def orders_buttons(
     callback: CallbackQuery, service: CrossworldService, state: FSMContext
 ) -> None:
-    await service.make_order_action(callback, state)
+    await service.make_order_action(callback=callback, state=state)
