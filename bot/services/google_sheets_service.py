@@ -11,7 +11,9 @@ class CrossworldTable:
     def _get_sheet_by_url(
         self, google_sheet_client: pygsheets.client.Client
     ) -> pygsheets.Worksheet:
-        sheets: pygsheets.Spreadsheet = google_sheet_client.open_by_url(url=self.sheet_url)
+        sheets: pygsheets.Spreadsheet = google_sheet_client.open_by_url(
+            url=self.sheet_url
+        )
         return sheets.sheet1
 
     def _get_googlesheet_client(self) -> pygsheets.client.Client:

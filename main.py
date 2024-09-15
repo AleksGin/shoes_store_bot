@@ -15,7 +15,7 @@ from bot.services.message_service import MessageService
 from config_reader import config
 
 
-async def main():
+async def main() -> None:
     bot = Bot(
         token=config.token_bot.get_secret_value(),
         default=DefaultBotProperties(parse_mode=ParseMode.HTML),

@@ -18,7 +18,9 @@ async def main_menu_handler(message: Message, service: CrossworldService) -> Non
 
 
 @router.message(F.text == MainMenu.calculate_the_cost)
-async def open_second_menu_handler(message: Message, service: CrossworldService) -> None:
+async def open_second_menu_handler(
+    message: Message, service: CrossworldService
+) -> None:
     await service.open_clothes_keyboard(message)
 
 
