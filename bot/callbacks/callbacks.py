@@ -14,7 +14,12 @@ router = Router()
 async def shoes_button(
     callback: CallbackQuery, service: CrossworldService, state: FSMContext
 ) -> None:
-    await service.calculate(callback=callback, clothe_name=Clothes.shoes, img_path=PathsImages.SHOES_CALCULATE, state=state)
+    await service.calculate(
+        callback=callback,
+        clothe_name=Clothes.shoes,
+        img_path=PathsImages.SHOES_CALCULATE,
+        state=state,
+    )
 
 
 @router.callback_query(F.data == "accessories")
@@ -22,7 +27,10 @@ async def accessories_button(
     callback: CallbackQuery, service: CrossworldService, state: FSMContext
 ) -> None:
     await service.calculate(
-        callback=callback, clothe_name=Clothes.accessories, img_path=PathsImages.ACCESSORIES_CALCULATE, state=state
+        callback=callback,
+        clothe_name=Clothes.accessories,
+        img_path=PathsImages.ACCESSORIES_CALCULATE,
+        state=state,
     )
 
 
@@ -31,7 +39,10 @@ async def jackets_button(
     callback: CallbackQuery, service: CrossworldService, state: FSMContext
 ) -> None:
     await service.calculate(
-        callback=callback, clothe_name=Clothes.jackets, img_path=PathsImages.JACKETS_CALCULATE, state=state
+        callback=callback,
+        clothe_name=Clothes.jackets,
+        img_path=PathsImages.JACKETS_CALCULATE,
+        state=state,
     )
 
 
@@ -39,7 +50,12 @@ async def jackets_button(
 async def hoodi_button(
     callback: CallbackQuery, service: CrossworldService, state: FSMContext
 ) -> None:
-    await service.calculate(callback=callback, clothe_name=Clothes.hoodi, img_path=PathsImages.HOODI_CALCULATE, state=state)
+    await service.calculate(
+        callback=callback,
+        clothe_name=Clothes.hoodi,
+        img_path=PathsImages.HOODI_CALCULATE,
+        state=state,
+    )
 
 
 @router.callback_query(F.data == "t-shirt")
@@ -47,7 +63,10 @@ async def t_shirt_button(
     callback: CallbackQuery, service: CrossworldService, state: FSMContext
 ) -> None:
     await service.calculate(
-        callback=callback, clothe_name=Clothes.t_shirt, img_path=PathsImages.T_SHITS_CALCULATE, state=state
+        callback=callback,
+        clothe_name=Clothes.t_shirt,
+        img_path=PathsImages.T_SHITS_CALCULATE,
+        state=state,
     )
 
 
