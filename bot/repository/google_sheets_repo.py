@@ -3,7 +3,7 @@ import pygsheets.client
 import pygsheets.spreadsheet
 
 
-class CrossworldTable:
+class CrossworldTableRepo:
     def __init__(self, cred_file: str, sheet_url: str) -> None:
         self.cred_file = cred_file
         self.sheet_url = sheet_url
