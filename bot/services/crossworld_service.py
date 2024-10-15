@@ -6,6 +6,7 @@ from fsm import (
     OrderStatusState,
     PriceCalculationStates,
 )
+from images import PathsImages
 from keyboards import (
     ask_for_order_keyboard,
     inline_delivery_button,
@@ -20,10 +21,11 @@ from menus import (
     Misc,
     Order,
 )
-
-from images import PathsImages
-from repository import CrossworldTableRepo
 from message_service import MessageService
+from repository import (
+    CacheRepo,
+    CrossworldTableRepo,
+)
 
 
 class CrossworldService:
@@ -31,9 +33,11 @@ class CrossworldService:
         self,
         message_service: MessageService,
         cross_table: CrossworldTableRepo,
+        cache_repo: CacheRepo,
     ) -> None:
         self.message_service = message_service
         self.cross_table = cross_table
+        self.cache_repo = cache_repo
 
     async def calculate(
         self,
