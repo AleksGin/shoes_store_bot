@@ -26,18 +26,21 @@ async def main() -> None:
         default=DefaultBotProperties(parse_mode=ParseMode.HTML),
     )
 
+    pool = redis.ConnectionPool.from_url(
+        url=config.cache_config.url,
+    )
+    cache_repo = CacheRepo(pool=pool)
+
     cross_table = CrossworldTableRepo(
         cred_file=config.table_config.cred_file.get_secret_value(),
         sheet_url=config.table_config.url_table,
     )
     message_service = MessageService(bot=bot)
     cross_service = CrossworldService(
-        message_service=message_service, cross_table=cross_table
+        message_service=message_service,
+        cross_table=cross_table,
+        cache_repo=cache_repo,
     )
-    pool = redis.ConnectionPool.from_url(
-        url=config.cache_config.url,
-    )
-    cache_repo = CacheRepo(pool=pool)
 
     dp = Dispatcher()
 
