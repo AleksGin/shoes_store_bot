@@ -10,9 +10,10 @@ from aiogram.types import (
     Message,
     ReplyKeyboardMarkup,
 )
-
-from bot.menus.miscellaneous import Misc
-from bot.menus.order import Order
+from menus import (
+    Misc,
+    Order,
+)
 
 
 class MessageService:

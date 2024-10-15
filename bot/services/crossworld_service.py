@@ -2,28 +2,33 @@ import asyncio
 
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
-
-from bot.fsm.calculation_state import PriceCalculationStates
-from bot.fsm.order_status_state import OrderStatusState
-from bot.images.paths_to_img import PathsImages
-from bot.keyboards.Inline.keyboard_ask_for_order import ask_for_order_keyboard
-from bot.keyboards.Inline.keyboard_clothes import keyboard_clothes
-from bot.keyboards.Inline.keyboard_miscellaneous import (
+from fsm import (
+    OrderStatusState,
+    PriceCalculationStates,
+)
+from keyboards import (
+    ask_for_order_keyboard,
     inline_delivery_button,
     instruction_button,
+    keyboard_clothes,
+    to_welcome_keyboard,
+    welcome_keyboard,
 )
-from bot.keyboards.reply.start_keyboard import to_welcome_keyboard, welcome_keyboard
-from bot.menus.clothes import ClothesPrice
-from bot.menus.main_menu import MainMenu
-from bot.menus.miscellaneous import Misc
-from bot.menus.order import Order
-from bot.services.google_sheets_service import CrossworldTable
-from bot.services.message_service import MessageService
+from menus import (
+    ClothesPrice,
+    MainMenu,
+    Misc,
+    Order,
+)
+
+from images import PathsImages
+from repository import CrossworldTableRepo
+from message_service import MessageService
 
 
 class CrossworldService:
     def __init__(
-        self, message_service: MessageService, cross_table: CrossworldTable
+        self, message_service: MessageService, cross_table: CrossworldTableRepo
     ) -> None:
         self.message_service = message_service
         self.cross_table = cross_table
