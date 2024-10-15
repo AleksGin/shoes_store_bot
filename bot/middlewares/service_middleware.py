@@ -1,11 +1,17 @@
-from typing import Any, Awaitable, Callable
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+)
 
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject
+from services import (
+    CrossworldService,
+    MessageService,
+)
 
-from bot.services.crossworld_service import CrossworldService
-from bot.services.google_sheets_service import CrossworldTable
-from bot.services.message_service import MessageService
+from repository import CrossworldTableRepo
 
 
 class ServiceMiddleware(BaseMiddleware):
@@ -13,7 +19,7 @@ class ServiceMiddleware(BaseMiddleware):
         self,
         cross_service: CrossworldService,
         message_service: MessageService,
-        cross_table: CrossworldTable,
+        cross_table: CrossworldTableRepo,
     ) -> None:
         self.cross_service = cross_service
         self.message_service = message_service
