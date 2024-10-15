@@ -2,6 +2,8 @@ from pydantic import BaseModel, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+class CacheConfig(BaseModel):
+    url: str
 class BotConfig(BaseModel):
     token_bot: SecretStr
 
@@ -14,6 +16,7 @@ class TableConfig(BaseModel):
 class Settings(BaseSettings):
     bot_config: BotConfig
     table_config: TableConfig
+    cache_config: CacheConfig
 
     model_config = SettingsConfigDict(
         env_file=(".env.template", ".env"),
