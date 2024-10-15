@@ -1,4 +1,4 @@
-from bot.menus.miscellaneous import Misc
+from menus import Misc
 
 
 class Order:
