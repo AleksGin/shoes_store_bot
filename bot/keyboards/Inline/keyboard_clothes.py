@@ -1,7 +1,9 @@
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+)
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-
-from bot.menus.clothes import Clothes
+from menus import Clothes
 
 
 def keyboard_clothes() -> InlineKeyboardMarkup:

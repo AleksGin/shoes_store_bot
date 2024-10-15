@@ -1,7 +1,9 @@
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+)
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-
-from bot.menus.order import Order
+from menus import Order
 
 
 def ask_for_order_keyboard() -> InlineKeyboardMarkup:

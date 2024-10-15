@@ -1,7 +1,9 @@
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+)
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-
-from bot.menus.miscellaneous import Misc
+from menus import Misc
 
 
 def instruction_button() -> InlineKeyboardMarkup:
@@ -9,7 +11,7 @@ def instruction_button() -> InlineKeyboardMarkup:
     builder.row(
         InlineKeyboardButton(
             text=Misc.instruction_button_text,
-            url="",#LINK
+            url="",  # LINK
         )
     )
 
