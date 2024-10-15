@@ -2,10 +2,10 @@ from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 
-from bot.fsm.calculation_state import PriceCalculationStates
-from bot.images.paths_to_img import PathsImages
-from bot.menus.clothes import Clothes
-from bot.services.crossworld_service import CrossworldService
+from fsm import PriceCalculationStates
+from images import PathsImages
+from menus import Clothes
+from services import CrossworldService
 
 router = Router()
 

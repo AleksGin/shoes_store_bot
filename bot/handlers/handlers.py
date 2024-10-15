@@ -1,13 +1,19 @@
-from aiogram import F, Router
+from aiogram import (
+    F,
+    Router,
+)
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
-
-from bot.fsm.calculation_state import PriceCalculationStates
-from bot.fsm.order_status_state import OrderStatusState
-from bot.menus.main_menu import MainMenu
-from bot.menus.order import Order
-from bot.services.crossworld_service import CrossworldService
+from fsm import (
+    OrderStatusState,
+    PriceCalculationStates,
+)
+from menus import (
+    MainMenu,
+    Order,
+)
+from services import CrossworldService
 
 router = Router()
 
