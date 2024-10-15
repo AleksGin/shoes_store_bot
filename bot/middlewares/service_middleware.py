@@ -11,7 +11,10 @@ from services import (
     MessageService,
 )
 
-from repository import CrossworldTableRepo
+from repository import (
+    CrossworldTableRepo,
+    CacheRepo,
+)
 
 
 class ServiceMiddleware(BaseMiddleware):
@@ -20,10 +23,12 @@ class ServiceMiddleware(BaseMiddleware):
         cross_service: CrossworldService,
         message_service: MessageService,
         cross_table: CrossworldTableRepo,
+        cache_repo: CacheRepo,
     ) -> None:
         self.cross_service = cross_service
         self.message_service = message_service
         self.cross_table = cross_table
+        self.cache_repo = cache_repo
 
     async def __call__(
         self,
@@ -34,5 +39,6 @@ class ServiceMiddleware(BaseMiddleware):
         data["service"] = self.cross_service
         data["message_service"] = self.message_service
         data["cros_table"] = self.cross_table
+        data["cache_repo"] = self.cache_repo
 
         return await handler(event, data)
