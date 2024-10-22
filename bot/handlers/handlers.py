@@ -85,4 +85,9 @@ async def waiting_order_buttons_hanlder(message: Message) -> None:
 async def process_order_handler(
     message: Message, service: CrossworldService, state: FSMContext
 ) -> None:
-    await service.delivery_status_process(message=message, state=state)
+    if message.from_user:
+        await service.delivery_status_process(
+            message=message,
+            state=state,
+            user_id=message.from_user.id,
+        )
