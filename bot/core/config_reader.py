@@ -4,6 +4,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class CacheConfig(BaseModel):
     url: str
+
+
 class BotConfig(BaseModel):
     token_bot: SecretStr
 

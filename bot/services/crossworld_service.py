@@ -1,4 +1,5 @@
 import asyncio
+import logging
 
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
@@ -21,11 +22,12 @@ from menus import (
     Misc,
     Order,
 )
-from message_service import MessageService
 from repository import (
     CacheRepo,
     CrossworldTableRepo,
 )
+
+from .message_service import MessageService
 
 
 class CrossworldService:
@@ -66,8 +68,8 @@ class CrossworldService:
 
     async def send_reviews(self, message: Message) -> Message:
         await self.message_service.send_message(
-            message,
-            Misc.reviews_and_link,
+            message=message,
+            text=Misc.reviews_and_link,
             path=PathsImages.REVIEWS_QR,
             chat_id=message.chat.id,
         )
@@ -135,7 +137,7 @@ class CrossworldService:
         self,
         message: Message,
         state: FSMContext,
-    ) -> None:
+    ) -> None | Message:
         user_data = await state.get_data()
         clothe_name = user_data.get("clothe_name")
 
@@ -145,49 +147,17 @@ class CrossworldService:
                 text=Misc.wrong,
             )
             return
-
         try:
             if message.text is not None:
                 amount = int(message.text)
-                if amount > 0:
-                    fixed_price = ClothesPrice.clothes_prices.get(clothe_name)
-                    delivery_price = ClothesPrice.clothes_delivery_price.get(
-                        clothe_name
-                    )
-                    comission = ClothesPrice.clothes_commission.get(clothe_name)
-
-                    if fixed_price:
-                        result = (amount * Misc.rate) + fixed_price
-
-                    calculating_message = await self.message_service.send_message(
-                        message=message,
-                        text=Order.calculating_process_text,
-                    )
-                    await asyncio.sleep(delay=1.3)
-                    await calculating_message.delete()
-                    await self.message_service.send_message(
-                        message=message,
-                        text=Order.total_amount.format(
-                            int(result),
-                            delivery_price,
-                            comission,
-                        ),
-                    )
-                    await self.message_service.send_message(
-                        message=message,
-                        text=Order.ask_for_order_text,
-                        keyboard=ask_for_order_keyboard(),
-                    )
-                    await state.set_state(
-                        state=PriceCalculationStates.waiting_for_order_buttons
-                    )
-                else:
-                    await self.message_service.send_message(
-                        message=message,
-                        text=Order.wrong_less_then_0_text,
-                    )
+                await self.__calculate_process(
+                    message=message,
+                    state=state,
+                    amount=amount,
+                    clothe_name=clothe_name,
+                )
         except ValueError:
-            await self.message_service.send_message(
+            return await self.message_service.send_message(
                 message=message,
                 text=Order.wrong_value_text,
             )
@@ -201,8 +171,8 @@ class CrossworldService:
 
         if isinstance(callback.message, Message):
             await self.message_service.send_message(
-                callback.message,
-                Order.make_order_text,
+                message=callback.message,
+                text=Order.make_order_text,
                 disable_web_page_preview=True,
             )
 
@@ -263,42 +233,176 @@ class CrossworldService:
         self,
         message: Message,
         state: FSMContext,
-    ) -> None:
+        user_id: int,
+    ) -> Message | None:
         if message.text is not None and message.text.isdigit():
             order_number = message.text
+            get_info_from_cache = await self.__check_info_in_cache(
+                user_id=user_id,
+                order_number=order_number,
+            )
+
             search_message = await self.message_service.send_message(
                 message=message,
                 text=Order.search_order_text,
             )
-            value = self.cross_table.search_delivery_status(data=order_number)
-            await search_message.delete()
-            if value == -1:
-                await self.message_service.send_message(
-                    message=message,
-                    text=Order.wrong_order_number_text.format(order_number),
-                    keyboard=inline_delivery_button(),
+
+            if get_info_from_cache:
+                check_for_actual = await self.__is_cache_actual(
+                    order_number=order_number,
+                    cached_info=get_info_from_cache,
                 )
-                await state.set_state(
-                    state=PriceCalculationStates.waiting_for_order_buttons
-                )
+                if check_for_actual:
+                    await self.__getting_process_info_from_cache(
+                        message=message,
+                        info_from_cache=get_info_from_cache,
+                        search_message=search_message,
+                    )
             else:
-                await self.message_service.send_message(
+                await self.__new_order_number_process_and_set_into_cache(
                     message=message,
-                    text=Order.order_number_status_text.format(
-                        order_number,
-                        value,
-                    ),
+                    search_message=search_message,
+                    order_number=order_number,
+                    user_id=user_id,
+                    state=state,
                 )
-                await self.message_service.send_message(
-                    message=message,
-                    text=Order.ask_for_view_new_order_text,
-                    keyboard=inline_delivery_button(),
-                )
-                await state.set_state(
-                    state=PriceCalculationStates.waiting_for_order_buttons
-                )
+            logging.info("Установил state")
+            await state.set_state(
+                state=PriceCalculationStates.waiting_for_order_buttons
+            )
         else:
-            await self.message_service.send_message(
+            return await self.message_service.send_message(
                 message=message,
                 text=Order.wrong_value_order_number_text,
+            )
+
+    async def __is_cache_actual(self, order_number: str, cached_info: str):
+        actual = self.cross_table.search_delivery_status(data=order_number)
+
+        if str(actual) in cached_info:
+            return True
+        return False
+
+    async def __set_info_to_cache(
+        self,
+        user_id: int,
+        order_number: str,
+        info: str,
+    ) -> None:
+        set_info = await self.cache_repo.set_info_about_order_by_user_id(
+            user_id=user_id,
+            order_number=order_number,
+            info=info,
+        )
+        return set_info
+
+    async def __check_info_in_cache(
+        self,
+        user_id: int,
+        order_number: str,
+    ):
+        check_cache = await self.cache_repo.get_info_about_order_by_user_id(
+            user_id=user_id,
+            order_number=order_number,
+        )
+        return check_cache
+
+    async def __calculate_process(
+        self,
+        message: Message,
+        state: FSMContext,
+        amount: int,
+        clothe_name: str,
+    ) -> Message | None:
+        if amount > 0:
+            fixed_price = ClothesPrice.clothes_prices.get(clothe_name)
+            delivery_price = ClothesPrice.clothes_delivery_price.get(clothe_name)
+            comission = ClothesPrice.clothes_commission.get(clothe_name)
+
+            if fixed_price:
+                result = (amount * Misc.rate) + fixed_price
+
+            calculating_message = await self.message_service.send_message(
+                message=message,
+                text=Order.calculating_process_text,
+            )
+            await asyncio.sleep(delay=1)
+            await calculating_message.delete()
+            await self.message_service.send_message(
+                message=message,
+                text=Order.total_amount.format(
+                    int(result),
+                    delivery_price,
+                    comission,
+                ),
+            )
+            await self.message_service.send_message(
+                message=message,
+                text=Order.ask_for_order_text,
+                keyboard=ask_for_order_keyboard(),
+            )
+            await state.set_state(
+                state=PriceCalculationStates.waiting_for_order_buttons
+            )
+        else:
+            return await self.message_service.send_message(
+                message=message,
+                text=Order.wrong_less_then_0_text,
+            )
+
+    async def __getting_process_info_from_cache(
+        self,
+        message: Message,
+        info_from_cache: str,
+        search_message: Message,
+    ):
+        await asyncio.sleep(0.6)
+        await search_message.delete()
+        await self.message_service.send_message(
+            message=message,
+            text=info_from_cache,
+        )
+        await self.message_service.send_message(
+            message=message,
+            text=Order.ask_for_view_new_order_text,
+            keyboard=inline_delivery_button(),
+        )
+
+    async def __new_order_number_process_and_set_into_cache(
+        self,
+        message: Message,
+        search_message: Message,
+        order_number: str,
+        user_id: int,
+        state: FSMContext,
+    ):
+        value = self.cross_table.search_delivery_status(data=order_number)
+        await search_message.delete()
+        if value == -1:
+            await self.message_service.send_message(
+                message=message,
+                text=Order.wrong_order_number_text.format(order_number),
+                keyboard=inline_delivery_button(),
+            )
+            await state.set_state(
+                state=PriceCalculationStates.waiting_for_order_buttons
+            )
+        else:
+            info = Order.order_number_status_text.format(
+                order_number,
+                value,
+            )
+            await self.message_service.send_message(
+                message=message,
+                text=info,
+            )
+            await self.__set_info_to_cache(
+                user_id=user_id,
+                order_number=order_number,
+                info=info,
+            )
+            await self.message_service.send_message(
+                message=message,
+                text=Order.ask_for_view_new_order_text,
+                keyboard=inline_delivery_button(),
             )

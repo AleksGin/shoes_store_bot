@@ -31,14 +31,14 @@ class MessageService:
     ) -> Message:
         if path:
             return await self.bot.send_photo(
-                chat_id or message.chat.id,
-                FSInputFile(path=path),
+                chat_id=chat_id or message.chat.id,
+                photo=FSInputFile(path=path),
                 caption=text,
                 reply_markup=keyboard,
             )
-        elif not path and message:
+        elif not path and message and text:
             return await message.answer(
-                text,
+                text=text,
                 reply_markup=keyboard,
                 disable_web_page_preview=disable_web_page_preview,
             )
@@ -57,8 +57,8 @@ class MessageService:
                 caption=Misc.selected_type.format(clothe_name),
             )
         return await self.bot.send_photo(
-            callback.from_user.id,
-            FSInputFile(path=path),
+            chat_id=callback.from_user.id,
+            photo=FSInputFile(path=path),
             reply_markup=keyboard,
             caption=Order.ask_for_amount_text,
         )
