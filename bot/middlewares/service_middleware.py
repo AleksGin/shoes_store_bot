@@ -9,6 +9,7 @@ from aiogram.types import TelegramObject
 from services import (
     CrossworldService,
     MessageService,
+    UpdateDataService,
 )
 
 from repository import (
@@ -24,11 +25,13 @@ class ServiceMiddleware(BaseMiddleware):
         message_service: MessageService,
         cross_table: CrossworldTableRepo,
         cache_repo: CacheRepo,
+        update_service: UpdateDataService,
     ) -> None:
         self.cross_service = cross_service
         self.message_service = message_service
         self.cross_table = cross_table
         self.cache_repo = cache_repo
+        self.update_service = update_service
 
     async def __call__(
         self,
@@ -40,5 +43,6 @@ class ServiceMiddleware(BaseMiddleware):
         data["message_service"] = self.message_service
         data["cros_table"] = self.cross_table
         data["cache_repo"] = self.cache_repo
+        data["update_service"] = self.update_service
 
         return await handler(event, data)
