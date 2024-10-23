@@ -17,6 +17,7 @@ from repository import (
 from services import (
     CrossworldService,
     MessageService,
+    UpdateDataService,
 )
 
 
@@ -43,6 +44,12 @@ async def main() -> None:
         cross_table=cross_table,
         cache_repo=cache_repo,
     )
+    update_service = UpdateDataService(
+        cross_service=cross_service,
+        cache_repo=cache_repo,
+    )
+
+    update_service.start_scheduler()
 
     dp = Dispatcher()
 
@@ -52,6 +59,7 @@ async def main() -> None:
             message_service=message_service,
             cross_table=cross_table,
             cache_repo=cache_repo,
+            update_service=update_service,
         )
     )
     dp.callback_query.middleware(
@@ -60,6 +68,7 @@ async def main() -> None:
             message_service=message_service,
             cross_table=cross_table,
             cache_repo=cache_repo,
+            update_service=update_service,
         )
     )
 
