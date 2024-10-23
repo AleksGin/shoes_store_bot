@@ -12,6 +12,7 @@ class UpdateDataService:
     ):
         self.cross_service = cross_service
         self.cache_repo = cache_repo
+        self.scheduler = AsyncIOScheduler()
 
     async def update_cache_from_gsheet(self):
         gsheet_data = ...
@@ -22,7 +23,10 @@ class UpdateDataService:
             ...
             # await self.cache_repo.set_info_about_order_by_user_id
 
-
-scheduler = AsyncIOScheduler()
-
-scheduler.add_job()
+    def start_scheduler(self):
+        self.scheduler.add_job(
+            self.update_cache_from_gsheet,
+            "interval",
+            minutes=15,
+        )
+        self.scheduler.start()
