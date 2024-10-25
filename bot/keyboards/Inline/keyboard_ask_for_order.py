@@ -3,7 +3,7 @@ from aiogram.types import (
     InlineKeyboardMarkup,
 )
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from menus import Order
+from phrases import Order
 
 
 def ask_for_order_keyboard() -> InlineKeyboardMarkup:
