@@ -1,5 +1,4 @@
 import asyncio
-import logging
 
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
@@ -14,17 +13,20 @@ from keyboards import (
     instruction_button,
     keyboard_clothes,
     to_welcome_keyboard,
+    view_another_order_button,
     welcome_keyboard,
 )
 from menus import (
     ClothesPrice,
     MainMenu,
+)
+from phrases import (
     Misc,
     Order,
 )
 from repository import (
+    AsyncGoogleSheetsService,
     CacheRepo,
-    CrossworldTableRepo,
 )
 
 from .message_service import MessageService
@@ -34,12 +36,12 @@ class CrossworldService:
     def __init__(
         self,
         message_service: MessageService,
-        cross_table: CrossworldTableRepo,
         cache_repo: CacheRepo,
+        async_table: AsyncGoogleSheetsService,
     ) -> None:
         self.message_service = message_service
-        self.cross_table = cross_table
         self.cache_repo = cache_repo
+        self.async_table = async_table
 
     async def calculate(
         self,
@@ -47,7 +49,16 @@ class CrossworldService:
         clothe_name: str,
         img_path: str,
         state: FSMContext,
-    ) -> None:
+    ):
+        data = await state.get_data()
+
+        if "clothe_name" in data:
+            await self.message_service.send_message(
+                callback.message,  # type: ignore
+                Misc.menu_error,
+            )
+            return
+
         await self.message_service.calculate_callback_action(
             callback=callback,
             path=img_path,
@@ -55,10 +66,9 @@ class CrossworldService:
             keyboard=to_welcome_keyboard(),
         )
         await state.set_state(state=PriceCalculationStates.waiting_for_amount)
-
         await state.update_data(clothe_name=clothe_name)
 
-    async def send_rules(self, message: Message) -> Message:
+    async def send_rules(self, message: Message) -> Message | None:
         await self.message_service.send_message(
             message=message,
             text=Misc.instruction_text,
@@ -66,7 +76,7 @@ class CrossworldService:
         )
         return await self.open_main(message=message)
 
-    async def send_reviews(self, message: Message) -> Message:
+    async def send_reviews(self, message: Message) -> Message | None:
         await self.message_service.send_message(
             message=message,
             text=Misc.reviews_and_link,
@@ -75,7 +85,7 @@ class CrossworldService:
         )
         return await self.open_main(message=message)
 
-    async def send_rate(self, message: Message) -> Message:
+    async def send_rate(self, message: Message) -> Message | None:
         await self.message_service.send_message(
             message=message,
             text=Misc.today_rate_text,
@@ -84,7 +94,7 @@ class CrossworldService:
         )
         return await self.open_main(message=message)
 
-    async def send_delivery_info(self, message: Message) -> Message:
+    async def send_delivery_info(self, message: Message) -> Message | None:
         await self.message_service.send_message(
             message=message,
             text=Misc.about_delivery,
@@ -94,7 +104,7 @@ class CrossworldService:
         )
         return await self.open_main(message=message)
 
-    async def make_order(self, message: Message) -> Message:
+    async def make_order(self, message: Message) -> Message | None:
         return await self.message_service.send_message(
             message=message,
             text=Order.make_order_text,
@@ -102,7 +112,8 @@ class CrossworldService:
             disable_web_page_preview=True,
         )
 
-    async def welcome_text(self, message: Message) -> Message:
+    async def welcome_text(self, message: Message, state: FSMContext) -> Message | None:
+        await state.clear()
         await self.message_service.send_message(
             message=message,
             text=Misc.welcome_text,
@@ -115,7 +126,7 @@ class CrossworldService:
         self,
         message: Message,
         state: FSMContext | None = None,
-    ) -> Message:
+    ) -> Message | None:
         if state:
             await state.clear()
         return await self.message_service.send_message(
@@ -124,7 +135,7 @@ class CrossworldService:
             keyboard=welcome_keyboard(),
         )
 
-    async def open_clothes_keyboard(self, message: Message) -> Message:
+    async def open_clothes_keyboard(self, message: Message) -> Message | None:
         return await self.message_service.send_message(
             message=message,
             text=Misc.choose_type,
@@ -163,7 +174,9 @@ class CrossworldService:
             )
 
     async def make_order_action(
-        self, callback: CallbackQuery, state: FSMContext
+        self,
+        callback: CallbackQuery,
+        state: FSMContext,
     ) -> None:
         await state.clear()
 
@@ -187,7 +200,12 @@ class CrossworldService:
             state=state,
         )
 
-    async def calculate_again_action(self, callback: CallbackQuery) -> None:
+    async def calculate_again_action(
+        self,
+        callback: CallbackQuery,
+        state: FSMContext,
+    ) -> None:
+        await state.clear()
         await self.message_service.order_handle_callback(
             callback=callback,
             action=self.open_clothes_keyboard,
@@ -198,11 +216,19 @@ class CrossworldService:
         callback: CallbackQuery,
         state: FSMContext,
     ) -> None:
+        data = await state.get_data()
+        if data.get("check_action"):
+            await self.message_service.send_message(
+                message=callback.message,  # type: ignore
+                text=Misc.status_action_error,
+            )
+            return
         await self.message_service.order_handle_callback(
             callback=callback,
             action=self.delivery_status_action,
             state=state,
         )
+        await state.update_data(check_action=True)
 
     async def delivery_status_action(
         self,
@@ -218,7 +244,7 @@ class CrossworldService:
                 path=PathsImages.DELIVERY_STATUS,
                 chat_id=message.chat.id,
             )
-            await state.update_data(photo_sent=True)
+            await state.update_data(photo_sent=True, check_action=True)
         else:
             await self.message_service.send_message(
                 message=message,
@@ -248,16 +274,12 @@ class CrossworldService:
             )
 
             if get_info_from_cache:
-                check_for_actual = await self.__is_cache_actual(
-                    order_number=order_number,
-                    cached_info=get_info_from_cache,
+                await self.__getting_process_info_from_cache(
+                    message=message,
+                    info_from_cache=get_info_from_cache,
+                    search_message=search_message,
                 )
-                if check_for_actual:
-                    await self.__getting_process_info_from_cache(
-                        message=message,
-                        info_from_cache=get_info_from_cache,
-                        search_message=search_message,
-                    )
+
             else:
                 await self.__new_order_number_process_and_set_into_cache(
                     message=message,
@@ -266,7 +288,7 @@ class CrossworldService:
                     user_id=user_id,
                     state=state,
                 )
-            logging.info("Установил state")
+
             await state.set_state(
                 state=PriceCalculationStates.waiting_for_order_buttons
             )
@@ -275,13 +297,6 @@ class CrossworldService:
                 message=message,
                 text=Order.wrong_value_order_number_text,
             )
-
-    async def __is_cache_actual(self, order_number: str, cached_info: str):
-        actual = self.cross_table.search_delivery_status(data=order_number)
-
-        if str(actual) in cached_info:
-            return True
-        return False
 
     async def __set_info_to_cache(
         self,
@@ -355,17 +370,17 @@ class CrossworldService:
         message: Message,
         info_from_cache: str,
         search_message: Message,
-    ):
+    ) -> Message | None:
         await asyncio.sleep(0.6)
         await search_message.delete()
         await self.message_service.send_message(
             message=message,
             text=info_from_cache,
         )
-        await self.message_service.send_message(
+        return await self.message_service.send_message(
             message=message,
             text=Order.ask_for_view_new_order_text,
-            keyboard=inline_delivery_button(),
+            keyboard=view_another_order_button(),
         )
 
     async def __new_order_number_process_and_set_into_cache(
@@ -375,14 +390,16 @@ class CrossworldService:
         order_number: str,
         user_id: int,
         state: FSMContext,
-    ):
-        value = self.cross_table.search_delivery_status(data=order_number)
+    ) -> None:
+        value: int = await self.async_table.async_search_delivery_status(
+            data=order_number
+        )
         await search_message.delete()
         if value == -1:
             await self.message_service.send_message(
                 message=message,
                 text=Order.wrong_order_number_text.format(order_number),
-                keyboard=inline_delivery_button(),
+                keyboard=view_another_order_button(),
             )
             await state.set_state(
                 state=PriceCalculationStates.waiting_for_order_buttons
@@ -404,5 +421,5 @@ class CrossworldService:
             await self.message_service.send_message(
                 message=message,
                 text=Order.ask_for_view_new_order_text,
-                keyboard=inline_delivery_button(),
+                keyboard=view_another_order_button(),
             )
