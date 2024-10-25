@@ -1,7 +1,9 @@
+import logging
 from pathlib import Path
 from typing import Callable
 
 from aiogram import Bot
+import aiogram.exceptions
 from aiogram.fsm.context import FSMContext
 from aiogram.types import (
     CallbackQuery,
@@ -10,9 +12,9 @@ from aiogram.types import (
     Message,
     ReplyKeyboardMarkup,
 )
-from menus import (
-    Misc,
+from phrases import (
     Order,
+    Misc,
 )
 
 
@@ -28,9 +30,9 @@ class MessageService:
         disable_web_page_preview: bool = False,
         path: str | Path | None = None,
         chat_id: int | None = None,
-    ) -> Message:
+    ) -> Message | None:
         if path:
-            return await self.bot.send_photo(
+            await self.bot.send_photo(
                 chat_id=chat_id or message.chat.id,
                 photo=FSInputFile(path=path),
                 caption=text,
@@ -70,20 +72,23 @@ class MessageService:
         state: FSMContext | None = None,
     ) -> None:
         if isinstance(callback.message, Message):
+            await self._delete_message(
+                chat_id=callback.from_user.id, message_id=callback.message.message_id
+            )
+
             if state and action:
-                await self.bot.delete_message(
-                    chat_id=callback.from_user.id,
-                    message_id=callback.message.message_id,
-                )
                 await action(callback.message, state)
             elif not state and action:
-                await self.bot.delete_message(
-                    chat_id=callback.from_user.id,
-                    message_id=callback.message.message_id,
-                )
                 await action(callback.message)
-            elif not state and not action:
-                await self.bot.delete_message(
-                    chat_id=callback.from_user.id,
-                    message_id=callback.message.message_id,
-                )
+
+    async def _delete_message(self, chat_id: int, message_id: int) -> None:
+        try:
+            await self.bot.delete_message(
+                chat_id=chat_id,
+                message_id=message_id,
+            )
+        except aiogram.exceptions.TelegramBadRequest as e:
+            if "message to delete not found" in str(e):
+                logging.info(f"error: {e}")
+            else:
+                logging.info(f"Failed to delete message: {e}")
