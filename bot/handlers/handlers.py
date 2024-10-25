@@ -11,16 +11,18 @@ from fsm import (
 )
 from menus import (
     MainMenu,
-    Order,
 )
+from phrases import Order
 from services import CrossworldService
 
 router = Router()
 
 
 @router.message(CommandStart())
-async def main_menu_handler(message: Message, service: CrossworldService) -> None:
-    await service.welcome_text(message=message)
+async def main_menu_handler(
+    message: Message, service: CrossworldService, state: FSMContext
+) -> None:
+    await service.welcome_text(message=message, state=state)
 
 
 @router.message(F.text == MainMenu.calculate_the_cost)
