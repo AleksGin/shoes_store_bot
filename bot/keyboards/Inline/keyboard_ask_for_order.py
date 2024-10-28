@@ -29,14 +29,3 @@ def ask_for_order_keyboard() -> InlineKeyboardMarkup:
     return builder.as_markup(resize_keyboard=True)
 
 
-def ask_for_track_order() -> InlineKeyboardMarkup:
-    builder = InlineKeyboardBuilder()
-
-    builder.row(
-        InlineKeyboardButton(
-            text=Order.ask_for_track_text,
-            callback_data="tracking_on,",
-        ),
-    )
-
-    return builder.as_markup(resize_keyboard=True)
