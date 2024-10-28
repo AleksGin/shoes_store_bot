@@ -81,6 +81,12 @@ class MessageService:
             elif not state and action:
                 await action(callback.message)
 
+    async def notification(self, user_id: int, order_number: str, new_status: str) -> None:
+        await self.bot.send_message(
+            chat_id=user_id,
+            text=Order.notification_about_status_order.format(order_number, new_status.split(':')[1]),
+        )
+
     async def _delete_message(self, chat_id: int, message_id: int) -> None:
         try:
             await self.bot.delete_message(
