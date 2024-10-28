@@ -9,7 +9,9 @@ __all__ = (
 )
 
 
-from .Inline.keyboard_ask_for_order import ask_for_order_keyboard
+from .Inline.keyboard_ask_for_order import (
+    ask_for_order_keyboard,
+)
 from .Inline.keyboard_clothes import keyboard_clothes
 from .Inline.keyboard_miscellaneous import (
     inline_delivery_button,
