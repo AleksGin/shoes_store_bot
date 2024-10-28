@@ -1,4 +1,5 @@
 import asyncio
+import logging
 
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
@@ -244,7 +245,10 @@ class CrossworldService:
                 path=PathsImages.DELIVERY_STATUS,
                 chat_id=message.chat.id,
             )
-            await state.update_data(photo_sent=True, check_action=True)
+            await state.update_data(
+                photo_sent=True,
+                check_action=True,
+            )
         else:
             await self.message_service.send_message(
                 message=message,
@@ -254,6 +258,18 @@ class CrossworldService:
             )
 
         await state.set_state(state=OrderStatusState.waiting_order_number)
+
+    async def notification_to_user(
+        self,
+        user_id: int,
+        order_number: str,
+        new_status: str,
+    ) -> None:
+        await self.message_service.notification(
+            user_id=user_id,
+            order_number=order_number,
+            new_status=new_status,
+        )
 
     async def delivery_status_process(
         self,
@@ -274,13 +290,24 @@ class CrossworldService:
             )
 
             if get_info_from_cache:
+                logging.info("проверил что есть ключ в кэше")
+                await asyncio.sleep(4)
                 await self.__getting_process_info_from_cache(
                     message=message,
                     info_from_cache=get_info_from_cache,
                     search_message=search_message,
                 )
-
+                await state.update_data(
+                    user_id=user_id,
+                    order_number=order_number,
+                    info=get_info_from_cache,
+                )
+                logging.info(
+                    f"добавил в стейт вот это: user_id: {user_id}, order_number: {order_number}, info: {get_info_from_cache}"
+                )
             else:
+                logging.info("понял что нет ключа в кэше")
+                await asyncio.sleep(4)
                 await self.__new_order_number_process_and_set_into_cache(
                     message=message,
                     search_message=search_message,
@@ -298,18 +325,49 @@ class CrossworldService:
                 text=Order.wrong_value_order_number_text,
             )
 
-    async def __set_info_to_cache(
+    async def tracking_process(
+        self,
+        callback: CallbackQuery,
+        state: FSMContext,
+    ) -> None:
+        logging.info("перешел в tracking_process после нажатия кнопки для отслеживания")
+        data = await state.get_data()
+        logging.info(f"получил из стейта инфу {data}")
+
+        user_id, order_number, info = (
+            data["user_id"],
+            data["order_number"],
+            data["info"],
+        )
+        logging.info(f"более подробная инфа {user_id} {order_number} {info}")
+
+        await self.__set_info_into_cache(
+            user_id=user_id,
+            order_number=order_number,
+            info=info,
+            tracking=True,
+        )
+
+        await self.message_service.send_message(
+            message=callback.message,  # type: ignore
+            text=f"Теперь заказ с номером {order_number} отслеживается!",
+        )
+
+    async def __set_info_into_cache(
         self,
         user_id: int,
         order_number: str,
         info: str,
+        tracking: bool,
     ) -> None:
-        set_info = await self.cache_repo.set_info_about_order_by_user_id(
+        logging.info("перешел в метод __set_info_to_cache")
+        set_into_cache = await self.cache_repo.set_info_about_order_by_user_id(
             user_id=user_id,
             order_number=order_number,
             info=info,
+            tracking=tracking,
         )
-        return set_info
+        return set_into_cache
 
     async def __check_info_in_cache(
         self,
@@ -370,17 +428,16 @@ class CrossworldService:
         message: Message,
         info_from_cache: str,
         search_message: Message,
-    ) -> Message | None:
-        await asyncio.sleep(0.6)
+    ) -> None:
+        await asyncio.sleep(4)
+        await asyncio.sleep(0.5)
         await search_message.delete()
         await self.message_service.send_message(
             message=message,
             text=info_from_cache,
         )
-        return await self.message_service.send_message(
+        await self.__ask_for_new_order_or_track(
             message=message,
-            text=Order.ask_for_view_new_order_text,
-            keyboard=view_another_order_button(),
         )
 
     async def __new_order_number_process_and_set_into_cache(
@@ -391,6 +448,8 @@ class CrossworldService:
         user_id: int,
         state: FSMContext,
     ) -> None:
+        logging.info("перешел в new_order_number_process")
+        await asyncio.sleep(4)
         value: int = await self.async_table.async_search_delivery_status(
             data=order_number
         )
@@ -413,13 +472,30 @@ class CrossworldService:
                 message=message,
                 text=info,
             )
-            await self.__set_info_to_cache(
+            set_info = await self.__set_info_into_cache(
+                user_id=user_id,
+                order_number=order_number,
+                info=info,
+                tracking=False,
+            )
+            logging.info(f"засунул в кэш {set_info}")
+            await asyncio.sleep(4)
+            await self.__ask_for_new_order_or_track(
+                message=message,
+            )
+            await state.update_data(
                 user_id=user_id,
                 order_number=order_number,
                 info=info,
             )
-            await self.message_service.send_message(
-                message=message,
-                text=Order.ask_for_view_new_order_text,
-                keyboard=view_another_order_button(),
+            logging.info(
+                f"в кэше не нашел, добавил: user_id: {user_id}, order_number: {order_number}, info: {info}"
             )
+
+    async def __ask_for_new_order_or_track(self, message: Message):
+        await self.message_service.send_message(
+            message=message,
+            text=Order.ask_for_view_new_order_text,
+            keyboard=view_another_order_button(),
+        )
+        
