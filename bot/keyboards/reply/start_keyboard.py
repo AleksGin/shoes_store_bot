@@ -17,7 +17,10 @@ def welcome_keyboard() -> ReplyKeyboardMarkup:
         KeyboardButton(text=MainMenu.rates),
         KeyboardButton(text=MainMenu.reviews),
     )
-    builder.row(KeyboardButton(text=MainMenu.make_order))
+    builder.row(
+        KeyboardButton(text=MainMenu.make_order),
+        KeyboardButton(text=MainMenu.my_orders),
+    )
     builder.row(KeyboardButton(text=MainMenu.instruction))
 
     return builder.as_markup(resize_keyboard=True)
