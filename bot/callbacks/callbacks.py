@@ -137,6 +137,18 @@ async def another_status_check_button(
     )
 
 
+@router.callback_query(F.data == "tracking_on")
+async def tracking_on_button(
+    callback: CallbackQuery,
+    service: CrossworldService,
+    state: FSMContext,
+) -> None:
+    await service.tracking_process(
+        callback=callback,
+        state=state,
+    )
+
+
 @router.callback_query(PriceCalculationStates.waiting_for_order_buttons)
 async def orders_buttons(
     callback: CallbackQuery,
