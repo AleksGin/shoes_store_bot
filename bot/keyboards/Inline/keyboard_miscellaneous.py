@@ -3,7 +3,10 @@ from aiogram.types import (
     InlineKeyboardMarkup,
 )
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from phrases import Misc
+from phrases import (
+    Misc,
+    Order,
+)
 
 
 def instruction_button() -> InlineKeyboardMarkup:
@@ -36,7 +39,13 @@ def view_another_order_button() -> InlineKeyboardMarkup:
         InlineKeyboardButton(
             text=Misc.another_delivery_button_status_check_text,
             callback_data="another_delivery_button_status_check",
-        )
+        ),
+    )
+    builder.row(
+        InlineKeyboardButton(
+            text=Order.ask_for_track_text,
+            callback_data="tracking_on",
+        ),
     )
 
     return builder.as_markup(resize_keyboard=True)
