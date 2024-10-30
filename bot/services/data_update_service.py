@@ -192,7 +192,7 @@ class UpdateDataService:
         self.scheduler.add_job(
             func=self._update_orders,
             trigger="cron",
-            hour=16,
-            minute=28,
+            hour=20,
+            minute=45,
         )
         self.scheduler.start()
