@@ -1,4 +1,3 @@
-import asyncio
 import logging
 
 from phrases import (
@@ -20,7 +19,7 @@ class CacheRepo:
         user_id: int,
         order_number: str,
         info: str,
-        expire_time: int = CacheTTL.day,
+        expire_time: int = CacheTTL.month,
         tracking: bool = False,
     ) -> None:
         async with Redis.from_pool(connection_pool=self.pool) as redis:
