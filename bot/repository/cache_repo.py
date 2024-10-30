@@ -14,12 +14,12 @@ class CacheRepo:
     def __init__(self, pool: ConnectionPool) -> None:
         self.pool = pool
 
-    async def set_info_about_order_by_user_id(
+    async def set_order_status(
         self,
-        user_id: int,
         order_number: str,
         info: str,
         expire_time: int = CacheTTL.month,
+        user_id: int | None = None,
         tracking: bool = False,
     ) -> None:
         async with Redis.from_pool(connection_pool=self.pool) as redis:
@@ -30,8 +30,7 @@ class CacheRepo:
                     order_number,
                 )
             else:
-                key: str = CacheKey.USER_ID_KEY.format(
-                    user_id,
+                key: str = CacheKey.ORDER_STATUS_KEY.format(
                     order_number,
                 )
             setting = await redis.set(
@@ -43,10 +42,10 @@ class CacheRepo:
                 f"форма ключа: {key}, инфо: {info}, а сама функция вот так: {setting}"
             )
 
-    async def get_info_about_order_by_user_id(
+    async def get_info_about_order(
         self,
-        user_id: int,
         order_number: str,
+        user_id: int | None = None,
         tracking: bool = False,
     ):
         async with Redis.from_pool(connection_pool=self.pool) as redis:
@@ -56,8 +55,7 @@ class CacheRepo:
                     order_number,
                 )
             else:
-                key = CacheKey.USER_ID_KEY.format(
-                    user_id,
+                key = CacheKey.ORDER_STATUS_KEY.format(
                     order_number,
                 )
             info = await redis.get(name=key)
@@ -88,6 +86,7 @@ class CacheRepo:
     async def get_multiple_order_infos(self, keys):
         async with Redis.from_pool(connection_pool=self.pool) as redis:
             infos = await redis.mget(keys=keys)
+            logging.info(f"сделал в mget-методе: {infos}")
 
         return [info.decode("utf-8") if info else None for info in infos]
 
