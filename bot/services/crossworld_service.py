@@ -16,6 +16,9 @@ from keyboards import (
     to_welcome_keyboard,
     view_another_order_button,
     welcome_keyboard,
+    delete_tracking_orders_buttons,
+    view_another_order_button_if_value,
+    delete_one_more_button,
 )
 from menus import (
     ClothesPrice,
@@ -24,6 +27,7 @@ from menus import (
 from phrases import (
     Misc,
     Order,
+    CacheKey,
 )
 from repository import (
     AsyncGoogleSheetsService,
@@ -55,8 +59,8 @@ class CrossworldService:
 
         if "clothe_name" in data:
             await self.message_service.send_message(
-                callback.message,  # type: ignore
-                Misc.menu_error,
+                message=callback.message,  # type: ignore
+                text=Misc.menu_error,
             )
             return
 
@@ -271,6 +275,40 @@ class CrossworldService:
             new_status=new_status,
         )
 
+    async def __get_all_track_user_orders(
+        self,
+        user_id: int,
+    ):
+        logging.info("перешел в __get_all_track_user_orders")
+        return await self.cache_repo.get_all_cached_orders(
+            match_form=CacheKey.match_for_tracking_orders.format(user_id)
+        )
+
+    async def user_order_process(
+        self,
+        message: Message,
+        state: FSMContext,
+    ) -> None:
+        logging.info("перешел в user_order_process")
+        user_id = message.from_user.id
+        logging.info(f"получил {user_id}")
+        tracking_keys_for_user = await self.__get_all_track_user_orders(
+            user_id=user_id,
+        )
+        if tracking_keys_for_user:
+            await self.__get_all_user_orders(
+                message=message,
+                keys=tracking_keys_for_user,
+            )
+            await state.set_state(
+                state=PriceCalculationStates.waiting_for_order_buttons
+            )
+        else:
+            await self.message_service.send_message(
+                message=message,
+                text=Order.empty_tracking_list_text,
+            )
+
     async def delivery_status_process(
         self,
         message: Message,
@@ -291,11 +329,10 @@ class CrossworldService:
 
             if get_info_from_cache:
                 logging.info("проверил что есть ключ в кэше")
-                await asyncio.sleep(4)
                 await self.__getting_process_info_from_cache(
                     message=message,
                     info_from_cache=get_info_from_cache,
-                    search_message=search_message,
+                    search_message=search_message,  # type: ignore
                 )
                 await state.update_data(
                     user_id=user_id,
@@ -307,10 +344,9 @@ class CrossworldService:
                 )
             else:
                 logging.info("понял что нет ключа в кэше")
-                await asyncio.sleep(4)
                 await self.__new_order_number_process_and_set_into_cache(
                     message=message,
-                    search_message=search_message,
+                    search_message=search_message,  # type: ignore
                     order_number=order_number,
                     user_id=user_id,
                     state=state,
@@ -341,17 +377,31 @@ class CrossworldService:
         )
         logging.info(f"более подробная инфа {user_id} {order_number} {info}")
 
-        await self.__set_info_into_cache(
-            user_id=user_id,
-            order_number=order_number,
-            info=info,
-            tracking=True,
+        check_for_already_tracking = (
+            await self.cache_repo.get_info_about_order_by_user_id(
+                user_id=user_id,
+                order_number=order_number,
+                tracking=True,
+            )
         )
 
-        await self.message_service.send_message(
-            message=callback.message,  # type: ignore
-            text=f"Теперь заказ с номером {order_number} отслеживается!",
-        )
+        if check_for_already_tracking:
+            await self.message_service.send_message(
+                message=callback.message,  # type: ignore
+                text=Order.already_tracking_text,
+            )
+        else:
+            await self.__set_info_into_cache(
+                user_id=user_id,
+                order_number=order_number,
+                info=info,
+                tracking=True,
+            )
+
+            await self.message_service.send_message(
+                message=callback.message,  # type: ignore
+                text=Order.order_tracked_text.format(order_number),
+            )
 
     async def __set_info_into_cache(
         self,
@@ -429,7 +479,6 @@ class CrossworldService:
         info_from_cache: str,
         search_message: Message,
     ) -> None:
-        await asyncio.sleep(4)
         await asyncio.sleep(0.5)
         await search_message.delete()
         await self.message_service.send_message(
@@ -449,7 +498,6 @@ class CrossworldService:
         state: FSMContext,
     ) -> None:
         logging.info("перешел в new_order_number_process")
-        await asyncio.sleep(4)
         value: int = await self.async_table.async_search_delivery_status(
             data=order_number
         )
@@ -458,7 +506,7 @@ class CrossworldService:
             await self.message_service.send_message(
                 message=message,
                 text=Order.wrong_order_number_text.format(order_number),
-                keyboard=view_another_order_button(),
+                keyboard=view_another_order_button_if_value(),
             )
             await state.set_state(
                 state=PriceCalculationStates.waiting_for_order_buttons
@@ -479,7 +527,6 @@ class CrossworldService:
                 tracking=False,
             )
             logging.info(f"засунул в кэш {set_info}")
-            await asyncio.sleep(4)
             await self.__ask_for_new_order_or_track(
                 message=message,
             )
@@ -492,10 +539,155 @@ class CrossworldService:
                 f"в кэше не нашел, добавил: user_id: {user_id}, order_number: {order_number}, info: {info}"
             )
 
-    async def __ask_for_new_order_or_track(self, message: Message):
+    async def __ask_for_new_order_or_track(self, message: Message) -> None:
         await self.message_service.send_message(
             message=message,
             text=Order.ask_for_view_new_order_text,
             keyboard=view_another_order_button(),
         )
-        
+
+    async def __get_all_user_orders(
+        self,
+        message: Message,
+        keys,
+    ) -> None:
+        keys = [key.decode("utf-8") for key in keys]
+
+        order_info_list = await self.cache_repo.get_multiple_order_infos(keys=keys)
+
+        if order_info_list:
+            messages = [
+                Order.tracking_list_for_user.format(
+                    key.split(":")[3], info.split(":")[1]
+                )
+                for key, info in zip(keys, order_info_list)
+                if info is not None
+            ]
+            response_text = Order.count_tracking_orders.format(len(keys)) + "\n\n".join(
+                messages
+            )
+        else:
+            response_text = Order.tracking_list_error
+
+        await self.message_service.send_message(
+            message=message,
+            text=response_text,
+            keyboard=delete_tracking_orders_buttons(),
+        )
+        await self.message_service.send_message(
+            message=message,
+            text=Order.text_about_tracking_orders,
+            keyboard=to_welcome_keyboard(),
+        )
+
+    async def delete_tracking_order(
+        self,
+        callback: CallbackQuery,
+        state: FSMContext,
+        user_id: int,
+        single_order_only: bool = False,
+    ) -> None:
+        get_all_user_orders = await self.__get_all_track_user_orders(
+            user_id=user_id,
+        )
+        if get_all_user_orders:
+            if single_order_only:
+                await self.delete_process(
+                    callback=callback,
+                    user_id=user_id,
+                    state=state,
+                    single_order_only=True,
+                )
+                await state.set_state(
+                    state=OrderStatusState.waiting_order_number_to_delete
+                )
+            else:
+                await self.delete_process(
+                    callback=callback,
+                    user_id=user_id,
+                    state=state,
+                    single_order_only=False,
+                )
+        else:
+            await self.message_service.send_message(
+                message=callback.message,
+                text=Order.empty_tracking_list_text,
+            )
+            await state.set_state(
+                state=OrderStatusState.all_tracker_deleted_notification
+            )
+
+    async def delete_process(
+        self,
+        callback: CallbackQuery,
+        user_id: int,
+        state: FSMContext,
+        single_order_only: bool = False,
+    ) -> None:
+        if isinstance(callback.message, Message):
+            if single_order_only:
+                await self.message_service.hide_keyboard(callback=callback)
+                await self.message_service.send_message(
+                    message=callback.message,
+                    text=Order.ask_for_order_number_to_delete,
+                )
+                await state.set_state(
+                    state=OrderStatusState.waiting_order_number_to_delete
+                )
+            else:
+                await self.message_service.hide_keyboard(callback=callback)
+                await self.delete_all(
+                    callback=callback,
+                    user_id=user_id,
+                    state=state,
+                )
+
+    async def delete_one(
+        self,
+        message: Message,
+        state: FSMContext,
+        user_id: int,
+    ) -> None:
+        try:
+            if message.text is not None:
+                order_number = int(message.text)
+                delete = await self.cache_repo.delete_tracking_orders(
+                    user_id=user_id,
+                    order_number=str(order_number),
+                    single_order_only=True,
+                )
+                if delete:
+                    await self.message_service.send_message(
+                        message=message,
+                        text=Order.specific_order_deleted_text.format(order_number),
+                        keyboard=delete_one_more_button(),
+                    )
+                    await state.set_state(
+                        state=OrderStatusState.waiting_for_press_tracker_button
+                    )
+                else:
+                    await self.message_service.send_message(
+                        message=message,
+                        text=Order.delete_order_error,
+                    )
+        except Exception:
+            await self.message_service.send_message(
+                message=message,
+                text=Order.wrong_value_order_number_for_delete,
+            )
+
+    async def delete_all(
+        self,
+        callback: CallbackQuery,
+        state: FSMContext,
+        user_id: int,
+    ) -> None:
+        await self.cache_repo.delete_tracking_orders(
+            user_id=user_id,
+            single_order_only=False,
+        )
+        await self.message_service.send_message(
+            message=callback.message,
+            text=Order.all_orders_deleted_text,
+        )
+        await state.set_state(OrderStatusState.all_tracker_deleted_notification)
