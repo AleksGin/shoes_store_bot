@@ -10,6 +10,7 @@ class CacheTTL:
     hour: int = 3600
     day: int = 86400
     week: int = day * 7
+    month: int = week * 4
     
 
 
