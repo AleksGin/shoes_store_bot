@@ -34,7 +34,7 @@ async def main() -> None:
         url=config.cache_config.url,
     )
 
-    redis_client = await redis.from_url(config.cache_config.url)
+    redis_client = await redis.from_url(url=config.cache_config.url)
 
     cache_repo = CacheRepo(pool=pool)
 
