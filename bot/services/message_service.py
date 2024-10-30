@@ -73,7 +73,8 @@ class MessageService:
     ) -> None:
         if isinstance(callback.message, Message):
             await self._delete_message(
-                chat_id=callback.from_user.id, message_id=callback.message.message_id
+                chat_id=callback.from_user.id,
+                message_id=callback.message.message_id,
             )
 
             if state and action:
@@ -81,13 +82,31 @@ class MessageService:
             elif not state and action:
                 await action(callback.message)
 
-    async def notification(self, user_id: int, order_number: str, new_status: str) -> None:
+    async def notification(
+        self,
+        user_id: int,
+        order_number: str,
+        new_status: str,
+    ) -> None:
         await self.bot.send_message(
             chat_id=user_id,
-            text=Order.notification_about_status_order.format(order_number, new_status.split(':')[1]),
+            text=Order.notification_about_status_order.format(
+                order_number, new_status.split(":")[1]
+            ),
         )
 
-    async def _delete_message(self, chat_id: int, message_id: int) -> None:
+    async def hide_keyboard(self, callback: CallbackQuery):
+        await self.bot.edit_message_reply_markup(
+            message_id=callback.message.message_id,
+            chat_id=callback.from_user.id,
+            reply_markup=None,
+        )
+
+    async def _delete_message(
+        self,
+        chat_id: int,
+        message_id: int,
+    ) -> None:
         try:
             await self.bot.delete_message(
                 chat_id=chat_id,
