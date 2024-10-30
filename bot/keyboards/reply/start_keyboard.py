@@ -15,10 +15,10 @@ def welcome_keyboard() -> ReplyKeyboardMarkup:
     )
     builder.row(
         KeyboardButton(text=MainMenu.rates),
-        KeyboardButton(text=MainMenu.reviews),
+        KeyboardButton(text=MainMenu.make_order),
     )
     builder.row(
-        KeyboardButton(text=MainMenu.make_order),
+        KeyboardButton(text=MainMenu.reviews),
         KeyboardButton(text=MainMenu.my_orders),
     )
     builder.row(KeyboardButton(text=MainMenu.instruction))
