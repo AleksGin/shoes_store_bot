@@ -1,6 +1,6 @@
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery
+from aiogram.types import CallbackQuery, Message
 from fsm import PriceCalculationStates
 from images import PathsImages
 from menus import Clothes
@@ -109,7 +109,10 @@ async def calculate_again_button(
     service: CrossworldService,
     state: FSMContext,
 ) -> None:
-    await service.calculate_again_action(callback=callback, state=state)
+    await service.calculate_again_action(
+        callback=callback,
+        state=state,
+    )
 
 
 @router.callback_query(F.data == "delivery_status_check")
@@ -146,6 +149,34 @@ async def tracking_on_button(
     await service.tracking_process(
         callback=callback,
         state=state,
+    )
+
+
+@router.callback_query(F.data == "delete_all")
+async def delete_all(
+    callback: CallbackQuery,
+    service: CrossworldService,
+    state: FSMContext,
+) -> None:
+    await service.delete_tracking_order(
+        callback=callback,
+        state=state,
+        user_id=callback.from_user.id,
+        single_order_only=False,
+    )
+
+
+@router.callback_query(F.data == "delete_specific")
+async def delete_specific(
+    callback: CallbackQuery,
+    service: CrossworldService,
+    state: FSMContext,
+) -> None:
+    await service.delete_tracking_order(
+        callback=callback,
+        state=state,
+        user_id=callback.from_user.id,
+        single_order_only=True,
     )
 
 
