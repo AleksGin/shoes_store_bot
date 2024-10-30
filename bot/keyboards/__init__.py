@@ -6,6 +6,9 @@ __all__ = (
     "to_welcome_keyboard",
     "welcome_keyboard",
     "view_another_order_button",
+    "delete_tracking_orders_buttons",
+    "view_another_order_button_if_value",
+    "delete_one_more_button",
 )
 
 
@@ -17,6 +20,9 @@ from .Inline.keyboard_miscellaneous import (
     inline_delivery_button,
     instruction_button,
     view_another_order_button,
+    delete_tracking_orders_buttons,
+    view_another_order_button_if_value,
+    delete_one_more_button,
 )
 from .reply.start_keyboard import (
     to_welcome_keyboard,
