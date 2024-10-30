@@ -318,7 +318,6 @@ class CrossworldService:
         if message.text is not None and message.text.isdigit():
             order_number = message.text
             get_info_from_cache = await self.__check_info_in_cache(
-                user_id=user_id,
                 order_number=order_number,
             )
 
@@ -377,12 +376,10 @@ class CrossworldService:
         )
         logging.info(f"более подробная инфа {user_id} {order_number} {info}")
 
-        check_for_already_tracking = (
-            await self.cache_repo.get_info_about_order_by_user_id(
-                user_id=user_id,
-                order_number=order_number,
-                tracking=True,
-            )
+        check_for_already_tracking = await self.cache_repo.get_info_about_order(
+            user_id=user_id,
+            order_number=order_number,
+            tracking=True,
         )
 
         if check_for_already_tracking:
@@ -405,13 +402,13 @@ class CrossworldService:
 
     async def __set_info_into_cache(
         self,
-        user_id: int,
+        user_id: int | None,
         order_number: str,
         info: str,
         tracking: bool,
     ) -> None:
         logging.info("перешел в метод __set_info_to_cache")
-        set_into_cache = await self.cache_repo.set_info_about_order_by_user_id(
+        set_into_cache = await self.cache_repo.set_order_status(
             user_id=user_id,
             order_number=order_number,
             info=info,
@@ -421,11 +418,9 @@ class CrossworldService:
 
     async def __check_info_in_cache(
         self,
-        user_id: int,
         order_number: str,
     ):
-        check_cache = await self.cache_repo.get_info_about_order_by_user_id(
-            user_id=user_id,
+        check_cache = await self.cache_repo.get_info_about_order(
             order_number=order_number,
         )
         return check_cache
@@ -521,7 +516,7 @@ class CrossworldService:
                 text=info,
             )
             set_info = await self.__set_info_into_cache(
-                user_id=user_id,
+                user_id=None,
                 order_number=order_number,
                 info=info,
                 tracking=False,
