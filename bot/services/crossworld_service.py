@@ -280,8 +280,8 @@ class CrossworldService:
         user_id: int,
     ):
         logging.info("перешел в __get_all_track_user_orders")
-        return await self.cache_repo.get_all_cached_orders(
-            match_form=CacheKey.match_for_tracking_orders.format(user_id)
+        return await self.cache_repo.get_cached_orders(
+            match_form=CacheKey.match_for_user_to_orders.format(user_id)
         )
 
     async def user_order_process(
@@ -685,4 +685,4 @@ class CrossworldService:
             message=callback.message,
             text=Order.all_orders_deleted_text,
         )
-        await state.set_state(OrderStatusState.all_tracker_deleted_notification)
+        await state.set_state(state=OrderStatusState.all_tracker_deleted_notification)
