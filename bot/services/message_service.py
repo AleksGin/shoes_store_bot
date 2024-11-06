@@ -88,12 +88,15 @@ class MessageService:
         order_number: str,
         new_status: str,
     ) -> None:
+        logging.info("я уже в MessageService")
         await self.bot.send_message(
             chat_id=user_id,
             text=Order.notification_about_status_order.format(
                 order_number, new_status.split(":")[1]
             ),
         )
+        logging.info(f"я уже отправил уведомление юзеру с id: {user_id} вот такой статус: {new_status}")
+        
 
     async def hide_keyboard(self, callback: CallbackQuery):
         await self.bot.edit_message_reply_markup(
