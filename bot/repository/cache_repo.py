@@ -1,5 +1,3 @@
-import logging
-
 from phrases import (
     CacheKey,
     CacheTTL,
@@ -25,7 +23,6 @@ class CacheRepo:
     ) -> None:
         async with Redis.from_pool(connection_pool=self.pool) as redis:
             if tracking:
-                logging.info("понял, что tracking True и я выполняю внутри tracking")
                 key: str = CacheKey.TRACKING_USER_ID_KEY.format(
                     user_id,
                     order_number,
@@ -34,13 +31,10 @@ class CacheRepo:
                 key: str = CacheKey.ORDER_STATUS_KEY.format(
                     order_number,
                 )
-            setting = await redis.set(
+            await redis.set(
                 name=key,
                 value=info,
                 ex=expire_time,
-            )
-            logging.info(
-                f"форма ключа: {key}, инфо: {info}, а сама функция вот так: {setting}"
             )
 
     async def get_info_about_order(
@@ -87,22 +81,15 @@ class CacheRepo:
     async def get_multiple_order_infos(self, keys):
         async with Redis.from_pool(connection_pool=self.pool) as redis:
             infos = await redis.mget(keys=keys)
-            logging.info(f"сделал в mget-методе: {infos}")
 
         return [info.decode("utf-8") if info else None for info in infos]
 
     async def set_multiple_value(self, keys, value):
-        logging.info("перешел в set_multiple_value")
         async with Redis.pipeline(self=self.redis) as pipe:
             for key in keys:
-                logging.info(f"получил key: {key}")
                 await pipe.set(name=key, value=value)
-                logging.info(
-                    f"установил новое значение для key: {key} с value: {value}"
-                )
-            sett = await pipe.execute()
-            logging.info(f"sett я выполнил я только сейчас после установки всех значений для всех пользователей = {sett}")
-            
+
+            await pipe.execute()
 
     async def delete_tracking_orders(
         self,
@@ -110,10 +97,8 @@ class CacheRepo:
         order_number: str | None = None,
         single_order_only: bool = False,
     ):
-        logging.info("перешел в delete_tracking_orders")
         async with Redis.from_pool(connection_pool=self.pool) as redis:
             if single_order_only:
-                logging.info(f"обратился {single_order_only}")
                 result = await redis.delete(
                     CacheKey.TRACKING_USER_ID_KEY.format(
                         user_id,
