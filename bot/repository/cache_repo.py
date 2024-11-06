@@ -11,8 +11,9 @@ from redis.asyncio import (
 
 
 class CacheRepo:
-    def __init__(self, pool: ConnectionPool) -> None:
+    def __init__(self, pool: ConnectionPool, redis: Redis) -> None:
         self.pool = pool
+        self.redis = redis
 
     async def set_order_status(
         self,
@@ -63,7 +64,7 @@ class CacheRepo:
                 return None
             return info.decode("utf-8")
 
-    async def get_all_cached_orders(
+    async def get_cached_orders(
         self,
         match_form: str,
     ):
@@ -90,6 +91,19 @@ class CacheRepo:
 
         return [info.decode("utf-8") if info else None for info in infos]
 
+    async def set_multiple_value(self, keys, value):
+        logging.info("перешел в set_multiple_value")
+        async with Redis.pipeline(self=self.redis) as pipe:
+            for key in keys:
+                logging.info(f"получил key: {key}")
+                await pipe.set(name=key, value=value)
+                logging.info(
+                    f"установил новое значение для key: {key} с value: {value}"
+                )
+            sett = await pipe.execute()
+            logging.info(f"sett я выполнил я только сейчас после установки всех значений для всех пользователей = {sett}")
+            
+
     async def delete_tracking_orders(
         self,
         user_id: int,
@@ -108,8 +122,8 @@ class CacheRepo:
                 )
                 return result > 0
             else:
-                orders = await self.get_all_cached_orders(
-                    match_form=CacheKey.match_for_tracking_orders.format(user_id)
+                orders = await self.get_cached_orders(
+                    match_form=CacheKey.match_for_user_to_orders.format(user_id)
                 )
                 if orders:
                     await redis.delete(*orders)
