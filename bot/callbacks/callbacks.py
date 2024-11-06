@@ -1,10 +1,13 @@
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery
 from fsm import PriceCalculationStates
 from images import PathsImages
 from menus import Clothes
-from services import CrossworldService
+from services import (
+    CrossworldService,
+    OrderService,
+)
 
 router = Router()
 
@@ -82,10 +85,10 @@ async def t_shirt_button(
 @router.callback_query(F.data == "make_order")
 async def make_order_button(
     callback: CallbackQuery,
-    service: CrossworldService,
+    order_service: OrderService,
     state: FSMContext,
 ) -> None:
-    await service.make_order_action(
+    await order_service.make_order_action(
         callback=callback,
         state=state,
     )
@@ -94,10 +97,10 @@ async def make_order_button(
 @router.callback_query(F.data == "not_make_order")
 async def not_make_order_button(
     callback: CallbackQuery,
-    service: CrossworldService,
+    order_service: OrderService,
     state: FSMContext,
 ) -> None:
-    await service.not_make_order_action(
+    await order_service.not_make_order_action(
         callback=callback,
         state=state,
     )
@@ -143,10 +146,10 @@ async def another_status_check_button(
 @router.callback_query(F.data == "tracking_on")
 async def tracking_on_button(
     callback: CallbackQuery,
-    service: CrossworldService,
+    order_service: OrderService,
     state: FSMContext,
 ) -> None:
-    await service.tracking_process(
+    await order_service.tracking_process(
         callback=callback,
         state=state,
     )
@@ -155,10 +158,10 @@ async def tracking_on_button(
 @router.callback_query(F.data == "delete_all")
 async def delete_all(
     callback: CallbackQuery,
-    service: CrossworldService,
+    order_service: OrderService,
     state: FSMContext,
 ) -> None:
-    await service.delete_tracking_order(
+    await order_service.delete_tracking_order(
         callback=callback,
         state=state,
         user_id=callback.from_user.id,
@@ -169,10 +172,10 @@ async def delete_all(
 @router.callback_query(F.data == "delete_specific")
 async def delete_specific(
     callback: CallbackQuery,
-    service: CrossworldService,
+    order_service: OrderService,
     state: FSMContext,
 ) -> None:
-    await service.delete_tracking_order(
+    await order_service.delete_tracking_order(
         callback=callback,
         state=state,
         user_id=callback.from_user.id,
@@ -183,10 +186,10 @@ async def delete_specific(
 @router.callback_query(PriceCalculationStates.waiting_for_order_buttons)
 async def orders_buttons(
     callback: CallbackQuery,
-    service: CrossworldService,
+    order_service: OrderService,
     state: FSMContext,
 ) -> None:
-    await service.make_order_action(
+    await order_service.make_order_action(
         callback=callback,
         state=state,
     )
