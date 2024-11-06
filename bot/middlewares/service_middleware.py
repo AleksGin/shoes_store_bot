@@ -10,6 +10,8 @@ from services import (
     CrossworldService,
     MessageService,
     UpdateDataService,
+    OrderService,
+    CacheService,
 )
 
 from repository import (
@@ -28,6 +30,8 @@ class ServiceMiddleware(BaseMiddleware):
         cache_repo: CacheRepo,
         update_service: UpdateDataService,
         async_table: AsyncGoogleSheetsService,
+        order_service: OrderService,
+        cache_service: CacheService,
     ) -> None:
         self.cross_service = cross_service
         self.message_service = message_service
@@ -35,6 +39,8 @@ class ServiceMiddleware(BaseMiddleware):
         self.cache_repo = cache_repo
         self.update_service = update_service
         self.async_table = async_table
+        self.order_service = order_service
+        self.cache_service = cache_service
 
     async def __call__(
         self,
@@ -48,4 +54,6 @@ class ServiceMiddleware(BaseMiddleware):
         data["cache_repo"] = self.cache_repo
         data["update_service"] = self.update_service
         data["async_table"] = self.async_table
+        data["order_service"] = self.order_service
+        data["cache_service"] = self.cache_service
         return await handler(event, data)
