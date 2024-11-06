@@ -40,31 +40,56 @@ class CrossworldTableRepo:
         delivery_status = wks.get_value((find_cell_row, status_col))
         return delivery_status
 
+    def get_statuses_for_orders(self, search_col: int = 1, status_col: int = 2) -> dict:
+        google_sheet_client = self._get_googlesheet_client()
+        wks = self._get_sheet_by_url(google_sheet_client=google_sheet_client)
+
+        orders = wks.get_col(search_col, include_tailing_empty=False)
+        statuses = wks.get_col(status_col, include_tailing_empty=False)
+
+        return dict(zip(orders, statuses))
+
 
 class AsyncGoogleSheetsService:
     def __init__(
         self,
         sheets_service: CrossworldTableRepo,
-        rate_limit_per_minute=95,
+        rate_limit_per_minute=58,
     ):
         self.sheets_service = sheets_service
         self.executor = ThreadPoolExecutor()
         self.limiter = AsyncLimiter(
             max_rate=rate_limit_per_minute,
-            time_period=100,
+            time_period=60,
         )
 
     async def async_search_delivery_status(
-        self, data: str, search_col: int = 1, status_col: int = 2
+        self,
+        data: str,
+        search_col: int = 1,
+        status_col: int = 2,
     ) -> int:
-        count = 0
         async with self.limiter:
-            count += 1
             loop = asyncio.get_running_loop()
             result: int = await loop.run_in_executor(
                 self.executor,
                 self.sheets_service.search_delivery_status,
                 data,
+                search_col,
+                status_col,
+            )
+        return result
+
+    async def async_get_all_orders_status(
+        self,
+        search_col: int = 1,
+        status_col: int = 2,
+    ) -> dict:
+        async with self.limiter:
+            loop = asyncio.get_running_loop()
+            result: dict = await loop.run_in_executor(
+                self.executor,
+                self.sheets_service.get_statuses_for_orders,
                 search_col,
                 status_col,
             )
