@@ -2,8 +2,8 @@ import logging
 from pathlib import Path
 from typing import Callable
 
-from aiogram import Bot
 import aiogram.exceptions
+from aiogram import Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.types import (
     CallbackQuery,
@@ -13,8 +13,8 @@ from aiogram.types import (
     ReplyKeyboardMarkup,
 )
 from phrases import (
-    Order,
     Misc,
+    Order,
 )
 
 
@@ -88,19 +88,16 @@ class MessageService:
         order_number: str,
         new_status: str,
     ) -> None:
-        logging.info("я уже в MessageService")
         await self.bot.send_message(
             chat_id=user_id,
             text=Order.notification_about_status_order.format(
                 order_number, new_status.split(":")[1]
             ),
         )
-        logging.info(f"я уже отправил уведомление юзеру с id: {user_id} вот такой статус: {new_status}")
-        
 
     async def hide_keyboard(self, callback: CallbackQuery):
         await self.bot.edit_message_reply_markup(
-            message_id=callback.message.message_id,
+            message_id=callback.message.message_id,  # type: ignore
             chat_id=callback.from_user.id,
             reply_markup=None,
         )
