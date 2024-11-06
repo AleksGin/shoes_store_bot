@@ -1,4 +1,5 @@
 import logging
+
 from aiogram import (
     F,
     Router,
@@ -14,7 +15,11 @@ from menus import (
     MainMenu,
 )
 from phrases import Order
-from services import CrossworldService
+from services import (
+    CacheService,
+    CrossworldService,
+    OrderService,
+)
 
 router = Router()
 
@@ -97,11 +102,11 @@ async def delivery_status_handler(
 @router.message(F.text == MainMenu.my_orders)
 async def my_orders_handler(
     message: Message,
-    service: CrossworldService,
+    order_service: OrderService,
     state: FSMContext,
 ) -> None:
     logging.info("перешел в router.message MainMenu.my_orders")
-    await service.user_order_process(
+    await order_service.user_order_process(
         message=message,
         state=state,
     )
@@ -124,13 +129,13 @@ async def waiting_order_buttons_hanlder(message: Message) -> None:
 @router.message(OrderStatusState.waiting_order_number_to_delete)
 async def delete_process_handler(
     message: Message,
-    service: CrossworldService,
+    cache_service: CacheService,
     state: FSMContext,
 ):
-    await service.delete_one(
+    await cache_service.delete_one(
         message=message,
         state=state,
-        user_id=message.from_user.id,
+        user_id=message.from_user.id,  # type: ignore
     )
 
 
@@ -146,7 +151,8 @@ async def process_order_handler(
             state=state,
             user_id=message.from_user.id,
         )
-        
+
+
 @router.message(OrderStatusState.waiting_for_press_tracker_button)
 async def waiting_tracker_button_handler(message: Message) -> None:
     await message.answer(text=Order.wrong_waiting_for_tracker_button_)
@@ -155,5 +161,3 @@ async def waiting_tracker_button_handler(message: Message) -> None:
 @router.message(OrderStatusState.all_tracker_deleted_notification)
 async def all_tracker_deleted_handler(message: Message) -> None:
     await message.answer(text=Order.all_tracker_deleted_notification_text)
-    
-    
