@@ -88,7 +88,6 @@ class CacheRepo:
         async with Redis.pipeline(self=self.redis) as pipe:
             for key in keys:
                 await pipe.set(name=key, value=value)
-
             await pipe.execute()
 
     async def delete_tracking_orders(
