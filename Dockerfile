@@ -1,20 +1,16 @@
-FROM python:3.12.0-slim AS builder
+FROM python:3.12.0-slim
 
-WORKDIR /app
+ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWRITEBYTECODE 1
 
-COPY pyproject.toml poetry.lock ./
+WORKDIR /cros_bot
 
-RUN python -m pip install --no-cache-dir poetry==1.8.2 \
-    && poetry config virtualenvs.in-project true \
-    && poetry install --no-interaction
+RUN pip install --upgrade pip wheel
 
+COPY requirements.txt ./requirements.txt
 
-FROM python:3.12.2-slim
+RUN pip install -r requirements.txt
 
-COPY --from=builder /app /app/
+COPY bot .
 
-COPY . ./
-
-ENV VENV_PATH="/app/.venv"
-
-CMD ["/app/.venv/bin/python", "main.py"]
+CMD ["python", "main.py"]
