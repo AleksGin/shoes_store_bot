@@ -1,10 +1,28 @@
-version: "1"
-
 services:
+  cros_bot:
+    restart: always
+    build:
+      dockerfile: ./Dockerfile
+      context: ./
+    depends_on:
+      - redis
+    volumes:
+      - ${IMAGE_CONFIG__PATH}:/cros_bot/cros_photo
+    environment:
+      - PATH_IMAGES=/cros_bot/cros_photo
+  
   redis:
-    image: redis:7.4.0
-    container_name: redis_db
+    image: redis:7.4.1-alpine
+    container_name: cros_db
+    restart: always 
     ports:
-      - "6379:6379" 
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+
+volumes:
+  redis-data:
+    
     
 
