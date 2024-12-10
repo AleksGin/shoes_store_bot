@@ -105,7 +105,6 @@ async def my_orders_handler(
     order_service: OrderService,
     state: FSMContext,
 ) -> None:
-    logging.info("перешел в router.message MainMenu.my_orders")
     await order_service.user_order_process(
         message=message,
         state=state,
