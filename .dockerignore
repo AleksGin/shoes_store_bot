@@ -1,8 +1,14 @@
 __pycache__
-creds.json
 .git
 .gitignore
 .venv
 .vscode
 crossworld_bot.code-workspace
-
+*.pyc
+*.pyo
+*.db
+*.sqlite3
+.env
+*.log
+*.csv
+cred.json
