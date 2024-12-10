@@ -7,6 +7,7 @@ from aiogram.types import (
     Message,
 )
 from fsm import OrderStatusState
+from images import PathsImages
 from keyboards import (
     delete_one_more_button,
     delete_tracking_orders_buttons,
@@ -151,6 +152,7 @@ class CacheService:
             message=message,
             text=response_text,
             keyboard=delete_tracking_orders_buttons(),
+            path=PathsImages.MY_ORDERS
         )
         await self.message_service.send_message(
             message=message,
