@@ -15,3 +15,4 @@ class PathsImages:
     JACKETS_CALCULATE = f"{PATH_IMAGES}/jackets_calculate.jpg"
     T_SHIRTS_CALCULATE = f"{PATH_IMAGES}/t_shirts_calculate.jpg"
     DELIVERY_STATUS = f"{PATH_IMAGES}/delivery_status.jpeg"
+    MY_ORDERS = f"{PATH_IMAGES}/my_orders.jpg"
