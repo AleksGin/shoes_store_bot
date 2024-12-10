@@ -1,7 +1,10 @@
 import asyncio
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from phrases import CacheKey, Order
+from phrases import (
+    CacheKey,
+    Order,
+)
 from repository import (
     AsyncGoogleSheetsService,
     CacheRepo,
@@ -144,7 +147,7 @@ class UpdateDataService:
         self.scheduler.add_job(
             func=self._update_orders,
             trigger="cron",
-            hour=12,
-            minute=00,
+            hour=23,
+            minute=36,
         )
         self.scheduler.start()
