@@ -12,17 +12,18 @@ services:
       - PATH_IMAGES=/cros_bot/cros_photo
     networks:
       - cross_network
-  
+
   redis:
     image: redis:7.4.1-alpine
     container_name: cros_db
-    restart: always 
+    restart: always
+    environment:
+      - REDIS_PASSWORD=${CACHE_CONFIG__PASSWORD}
     volumes:
       - redis-data:/data
     command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
     networks:
       - cross_network
-
 
 networks:
   cross_network:
@@ -30,6 +31,3 @@ networks:
 
 volumes:
   redis-data:
-    
-    
-
