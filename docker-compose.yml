@@ -18,10 +18,10 @@ services:
     container_name: cros_db
     restart: always
     environment:
-      - REDIS_PASSWORD=${CACHE_CONFIG__PASSWORD}
+      - CACHE_CONFIG__PASSWORD=${CACHE_CONFIG__PASSWORD}
     volumes:
       - redis-data:/data
-    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    command: ["redis-server", "--requirepass", "${CACHE_CONFIG__PASSWORD}"]
     networks:
       - cross_network
 
