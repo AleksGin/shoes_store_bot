@@ -14,7 +14,7 @@ def instruction_button() -> InlineKeyboardMarkup:
     builder.row(
         InlineKeyboardButton(
             text=Misc.instruction_button_text,
-            url="",  # LINK
+            url="https://telegra.ph/Instrukciya-dlya-novichkov-04-18",
         )
     )
 
