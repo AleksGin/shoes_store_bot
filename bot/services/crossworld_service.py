@@ -51,7 +51,7 @@ class CrossworldService:
         clothe_name: str,
         img_path: str,
         state: FSMContext,
-    ):
+    ) -> None:
         data = await state.get_data()
 
         if "clothe_name" in data:
@@ -95,6 +95,12 @@ class CrossworldService:
             chat_id=message.chat.id,
         )
         return await self.open_main(message=message)
+
+    async def send_nearest_date(self, message: Message) -> Message | None:
+        await self.message_service.send_message(
+            message=message,
+            text=Misc.nearest_date_text,
+        )
 
     async def send_delivery_info(self, message: Message) -> Message | None:
         await self.message_service.send_message(
@@ -244,7 +250,6 @@ class CrossworldService:
             get_info_from_cache = await self.cache_service.check_info_in_cache(
                 order_number=order_number,
             )
-            
 
             search_message = await self.message_service.send_message(
                 message=message,

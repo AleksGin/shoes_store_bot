@@ -82,6 +82,34 @@ async def t_shirt_button(
     )
 
 
+@router.callback_query(F.data == "bags")
+async def bags_button(
+    callback: CallbackQuery,
+    service: CrossworldService,
+    state: FSMContext,
+) -> None:
+    await service.calculate(
+        callback=callback,
+        clothe_name=Clothes.bags_and_backpacks,
+        img_path=PathsImages.BAGS_CALCULATE,
+        state=state,
+    )
+
+
+@router.callback_query(F.data == "sports_eq")
+async def sport_equip_button(
+    callback: CallbackQuery,
+    service: CrossworldService,
+    state: FSMContext,
+) -> None:
+    await service.calculate(
+        callback=callback,
+        clothe_name=Clothes.sports_equipment,
+        img_path=PathsImages.SPORT_EQ_CALCULATE,
+        state=state,
+    )
+
+
 @router.callback_query(F.data == "make_order")
 async def make_order_button(
     callback: CallbackQuery,

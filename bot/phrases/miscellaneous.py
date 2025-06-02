@@ -9,6 +9,8 @@ class Misc:
     )
     reviews_and_link: str = "<b>Отзывы о нас:</b>\n" "https://t.me/crswrld_comment"
     rate: float = 13.2
+    date: str = "25.07.2025" # example: "25.07.2025"
+    nearest_date_text: str = f"⌛Ближайшая отправка: <b>{date}</b>"
     today_rate_text: str = (
         f"💹Курс на сегодня составляет:\n\n"
         f"<b>1¥ = {rate}₽</b>\n\n"

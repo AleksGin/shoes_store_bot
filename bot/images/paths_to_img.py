@@ -11,6 +11,8 @@ class PathsImages:
     DELIVERY = f"{PATH_IMAGES}/delivery.jpg"
     SHOES_CALCULATE = f"{PATH_IMAGES}/shoes_calculate.jpg"
     ACCESSORIES_CALCULATE = f"{PATH_IMAGES}/acces_calculate.jpg"
+    BAGS_CALCULATE = f"{PATH_IMAGES}/bags_calculate.jpg"
+    SPORT_EQ_CALCULATE = f"{PATH_IMAGES}/sports_eq_calculate.jpg"
     HOODI_CALCULATE = f"{PATH_IMAGES}/hoodi_calculate.jpg"
     JACKETS_CALCULATE = f"{PATH_IMAGES}/jackets_calculate.jpg"
     T_SHIRTS_CALCULATE = f"{PATH_IMAGES}/t_shirts_calculate.jpg"

@@ -9,3 +9,5 @@ class MainMenu:
     back_to_main_menu: str = "🏠На главную"
     main_menu: str = "<b>🏠Главное меню:</b>"
     my_orders: str = "📋Мои заказы"
+    nearest_date: str = "🗓️Ближайшая дата отправки"
+    

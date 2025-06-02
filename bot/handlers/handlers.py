@@ -97,6 +97,13 @@ async def delivery_status_handler(
     state: FSMContext,
 ) -> None:
     await service.delivery_status_action(message=message, state=state)
+    
+@router.message(F.text == MainMenu.nearest_date)
+async def nearest_date(
+    message: Message,
+    service: CrossworldService,
+) -> None:
+    await service.send_nearest_date(message=message)
 
 
 @router.message(F.text == MainMenu.my_orders)
