@@ -244,6 +244,7 @@ class CrossworldService:
             get_info_from_cache = await self.cache_service.check_info_in_cache(
                 order_number=order_number,
             )
+            
 
             search_message = await self.message_service.send_message(
                 message=message,

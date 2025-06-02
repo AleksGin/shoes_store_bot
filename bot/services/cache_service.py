@@ -32,7 +32,7 @@ class CacheService:
         self.message_service = message_service
         self.order_service: "OrderService"
 
-    def set_order_service(self, order_service: "OrderService"):
+    def set_order_service(self, order_service: "OrderService") -> None:
         self.order_service = order_service
 
     async def set_info_into_cache(
@@ -152,7 +152,7 @@ class CacheService:
             message=message,
             text=response_text,
             keyboard=delete_tracking_orders_buttons(),
-            path=PathsImages.MY_ORDERS
+            path=PathsImages.MY_ORDERS,
         )
         await self.message_service.send_message(
             message=message,

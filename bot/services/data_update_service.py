@@ -78,6 +78,7 @@ class UpdateDataService:
             await self.cache_repo.set_order_status(
                 order_number=order_number,
                 info=format_gsheet_order_status,
+                keep_ttl=True,
             )
 
     async def __update_new_status_to_track_orders(
@@ -93,6 +94,7 @@ class UpdateDataService:
             await self.cache_repo.set_multiple_value(
                 keys=tracking_keys,
                 value=new_status,
+                keep_ttl=True,
             )
 
             await self.__notification_user_about_change(

@@ -20,6 +20,7 @@ class CacheRepo:
         expire_time: int = CacheTTL.month,
         user_id: int | None = None,
         tracking: bool = False,
+        keep_ttl: bool = False,
     ) -> None:
         async with Redis.from_pool(connection_pool=self.pool) as redis:
             if tracking:
@@ -31,11 +32,18 @@ class CacheRepo:
                 key: str = CacheKey.ORDER_STATUS_KEY.format(
                     order_number,
                 )
-            await redis.set(
-                name=key,
-                value=info,
-                ex=expire_time,
-            )
+            if keep_ttl:
+                await redis.set(
+                    name=key,
+                    value=info,
+                    keepttl=True,
+                )
+            else:
+                await redis.set(
+                    name=key,
+                    value=info,
+                    ex=expire_time,
+                )
 
     async def get_info_about_order(
         self,
@@ -84,10 +92,13 @@ class CacheRepo:
 
         return [info.decode("utf-8") if info else None for info in infos]
 
-    async def set_multiple_value(self, keys, value):
+    async def set_multiple_value(self, keys, value, keep_ttl: bool = False):
         async with Redis.pipeline(self=self.redis) as pipe:
             for key in keys:
-                await pipe.set(name=key, value=value)
+                if keep_ttl:
+                    await pipe.set(name=key, value=value, keepttl=True)
+                else:
+                    await pipe.set(name=key, value=value)
             await pipe.execute()
 
     async def delete_tracking_orders(
