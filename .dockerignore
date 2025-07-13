@@ -8,7 +8,7 @@ crossworld_bot.code-workspace
 *.pyo
 *.db
 *.sqlite3
-.env
+# .env
 *.log
 *.csv
 cred.json

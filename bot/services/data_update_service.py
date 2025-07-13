@@ -7,8 +7,9 @@ from phrases import (
 )
 from repository import (
     AsyncGoogleSheetsService,
-    CacheRepo,
 )
+
+from shared.shared_repos import CacheRepo
 
 from .order_service import OrderService
 

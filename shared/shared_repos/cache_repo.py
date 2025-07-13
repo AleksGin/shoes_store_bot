@@ -1,10 +1,13 @@
-from phrases import (
-    CacheKey,
-    CacheTTL,
-)
+from typing import List
+
 from redis.asyncio import (
     ConnectionPool,
     Redis,
+)
+from shared_pharses import (
+    CacheErrors,
+    CacheKey,
+    CacheTTL,
 )
 
 
@@ -123,3 +126,78 @@ class CacheRepo:
                 if orders:
                     await redis.delete(*orders)
         return False
+
+    async def get_yuan_rate(self, key: str, default_rate: int = 0) -> float:
+        async with Redis.from_pool(connection_pool=self.pool) as redis:
+            result = await redis.get(key)
+            if result is not None:
+                try:
+                    return float(result.decocde("utf-8"))
+                except (ValueError, AttributeError):
+                    raise ValueError(CacheErrors.uncorrect_value)
+            return default_rate
+
+    async def set_yuan_rate(
+        self,
+        key: str,
+        rate: int | float,
+    ) -> bool:
+        async with Redis.from_pool(connection_pool=self.pool) as redis:
+            result = await redis.set(key, str(rate))
+            await redis.persist(key)
+            return result is not None
+
+    async def get_admin_ids(self, key: str) -> List[int]:
+        async with Redis.from_pool(connection_pool=self.pool) as redis:
+            result = await redis.smembers(key)  # type: ignore
+            if not result:
+                return []
+            try:
+                return [int(admin_id.decode("utf-8")) for admin_id in result]
+            except (ValueError, AttributeError):
+                raise ValueError(f"Некорректные ID админов в Redis: {result}")
+
+    async def add_admin_id(
+        self,
+        key: str,
+        user_id: int,
+    ) -> bool:
+        async with Redis.from_pool(connection_pool=self.pool) as redis:
+            result = await redis.sadd(key, user_id)  # type: ignore
+            await redis.persist(key)
+            return result > 0
+
+    async def remove_admin_id(
+        self,
+        key: str,
+        user_id: int,
+    ) -> bool:
+        async with Redis.from_pool(connection_pool=self.pool) as redis:
+            result = await redis.srem(key, user_id)  # type: ignore
+            return result > 0
+
+    async def is_admin(
+        self,
+        key: str,
+        user_id: int,
+    ) -> bool:
+        async with Redis.from_pool(connection_pool=self.pool) as redis:
+            result = await redis.sismember(key, user_id)  # type: ignore
+            return result > 0
+
+    async def get_closest_day(self, key: str) -> str | None:
+        async with Redis.from_pool(connection_pool=self.pool) as redis:
+            result = await redis.get(key)
+            if result is not None:
+                return result.decode("utf-8")
+            return None
+
+    async def set_closest_day(
+        self,
+        key: str,
+        date: str,
+    ) -> bool:
+        async with Redis.from_pool(connection_pool=self.pool) as redis:
+            result = await redis.set(key, date)
+            await redis.persist(key)
+            return result is not None

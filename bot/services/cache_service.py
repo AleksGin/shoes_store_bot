@@ -14,7 +14,7 @@ from keyboards import (
     to_welcome_keyboard,
 )
 from phrases import Order
-from repository import CacheRepo
+from shared.shared_repos import CacheRepo
 
 from .message_service import MessageService
 

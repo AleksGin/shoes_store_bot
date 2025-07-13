@@ -6,7 +6,6 @@ from aiogram.fsm.storage.redis import RedisStorage
 from phrases import CacheTTL
 from repository import (
     AsyncGoogleSheetsService,
-    CacheRepo,
     CrossworldTableRepo,
 )
 from services import (
@@ -18,6 +17,7 @@ from services import (
 )
 
 from core.config_reader import config
+from shared.shared_repos import CacheRepo
 
 
 class ServiceFactory:

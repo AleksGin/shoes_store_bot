@@ -13,8 +13,9 @@ from keyboards import (
 from phrases import CacheKey, Order
 from repository import (
     AsyncGoogleSheetsService,
-    CacheRepo,
 )
+
+from shared.shared_repos import CacheRepo
 
 from .message_service import MessageService
 

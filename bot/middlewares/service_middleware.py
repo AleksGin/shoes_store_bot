@@ -16,10 +16,9 @@ from services import (
 
 from repository import (
     CrossworldTableRepo,
-    CacheRepo,
     AsyncGoogleSheetsService,
 )
-
+from shared.shared_repos import CacheRepo
 
 class ServiceMiddleware(BaseMiddleware):
     def __init__(

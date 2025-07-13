@@ -2,14 +2,32 @@ services:
   cros_bot:
     restart: always
     build:
-      dockerfile: ./Dockerfile
+      dockerfile: ./bot/Dockerfile
       context: ./
+    container_name: cros_bot
     depends_on:
       - redis
     volumes:
       - ${IMAGE_CONFIG__PATH}:/cros_bot/cros_photo
     environment:
       - PATH_IMAGES=/cros_bot/cros_photo
+      - TZ=Europe/Moscow
+    networks:
+      - cross_network
+  
+  admin_bot:
+    restart: always
+    build:
+      dockerfile: ./admin_bot/Dockerfile
+      context: ./
+    container_name: admin_bot
+    depends_on:
+      - redis
+      - cros_bot
+    volumes:
+      - ${ADMIN_IMAGE_CONFIG__PATH}:/admin_bot/images
+    environment:
+      - ADMIN_IMAGE_CONFIG__PATH=/admin_bot/images
       - TZ=Europe/Moscow
     networks:
       - cross_network

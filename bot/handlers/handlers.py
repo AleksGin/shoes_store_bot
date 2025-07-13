@@ -1,5 +1,3 @@
-import logging
-
 from aiogram import (
     F,
     Router,
