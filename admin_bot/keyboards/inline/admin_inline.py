@@ -17,6 +17,12 @@ def admin_command_keyboard() -> InlineKeyboardMarkup:
     )
     builder.row(
         InlineKeyboardButton(
+            text=AdminMenu.change_closest_date,
+            callback_data="change_date",
+        )
+    )
+    builder.row(
+        InlineKeyboardButton(
             text=AdminMenu.restart_bot,
             callback_data="restart",
         )

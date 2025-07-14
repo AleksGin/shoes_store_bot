@@ -11,7 +11,7 @@ class SharedServiceFactory:
     @classmethod
     def _get_redis_url(cls) -> str:
         redis_url: Optional[str] = os.getenv("CACHE_CONFIG__URL")
-        if redis_url is None or redis_url.strip("CACHE_CONFIG__URL"):
+        if redis_url is None or not redis_url.strip("CACHE_CONFIG__URL"):
             raise ValueError("CACHE_CONFIG__URL environment variable is required!")
         return redis_url
 

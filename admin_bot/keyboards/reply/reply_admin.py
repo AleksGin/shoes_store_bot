@@ -9,6 +9,8 @@ from phrases import AdminMenu
 def to_admin_menu() -> ReplyKeyboardMarkup:
     builder = ReplyKeyboardBuilder()
 
-    builder.row(KeyboardButton(text=AdminMenu.back_to_admin_menu))
+    builder.row(
+        KeyboardButton(text=AdminMenu.back_to_admin_menu),
+    )
 
     return builder.as_markup(resize_keyboard=True)

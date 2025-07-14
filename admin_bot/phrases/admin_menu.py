@@ -1,11 +1,17 @@
 class AdminMenu:
     change_rate: str = "💹Изменить курс"
-    change_closest_date: str = "📆Установить дату отправки"
+    change_closest_date: str = "📆Изменить дату отправки"
     restart_bot: str = "🔄Перезапустить бота"
     statistics: str = "📊Статистика"
     control_admins: str = "👥Управление админами"
     back_to_admin_menu: str = "🏠На главную"
     admin_menu: str = "⚙️Админ-панель:"
+    
+    
+class AdminManagementMenu: 
+    add_admin: str = "🟢Добавить админа"
+    delete_admin: str = "🔴Удалить админа"
+    admins_list: str = "📋Список админов"
     
     
     

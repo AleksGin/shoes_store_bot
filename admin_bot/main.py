@@ -19,7 +19,7 @@ from shared.shared_pharses import CacheKey
 
 from middleware import AdminMiddleware
 from handlers import admin_handler_router
-from callbacks import admin_callback_router
+from admin_callbacks import admin_callback_router
 
 
 async def main() -> None:
@@ -70,7 +70,7 @@ async def main() -> None:
 
     admin_middleware = AdminMiddleware(
         admin_ids=admin_ids,
-        admin_panel_service=admin_service,
+        admin_service=admin_service,
         message_service=message_service,
         cache_repo=cache_repo,
     )

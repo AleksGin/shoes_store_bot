@@ -15,5 +15,9 @@ admin_handler_router = Router()
 async def start_hanlder(
     message: Message,
     admin_service: AdminPanelService,
+    is_admin: bool,
 ) -> None:
-    await admin_service.welcome_text(message=message)
+    await admin_service.welcome_text(
+        message=message,
+        is_admin=is_admin,
+    )

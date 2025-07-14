@@ -7,6 +7,7 @@ from aiogram.types import (
     ReplyKeyboardMarkup,
 )
 from aiogram.types.message import Message
+from aiogram.fsm.context import FSMContext
 
 
 class MessageService:

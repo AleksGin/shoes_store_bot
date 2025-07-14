@@ -22,12 +22,12 @@ class AdminMiddleware(BaseMiddleware):
     def __init__(
         self,
         admin_ids: list[int],
-        admin_panel_service: AdminPanelService,
+        admin_service: AdminPanelService,
         message_service: MessageService,
         cache_repo: CacheRepo,
     ) -> None:
-        self.admin_ids = admin_ids
-        self.admin_panel_service = admin_panel_service
+        self.admin_ids = set(admin_ids)
+        self.admin_service = admin_service
         self.message_service = message_service
         self.cache_repo = cache_repo
 
@@ -45,7 +45,7 @@ class AdminMiddleware(BaseMiddleware):
         else:
             data["is_admin"] = False
 
-        data["admin_service"] = self.admin_panel_service
+        data["admin_service"] = self.admin_service
         data["message_service"] = self.message_service
         data["cache_repo"] = self.cache_repo
 

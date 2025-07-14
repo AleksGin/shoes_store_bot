@@ -5,8 +5,11 @@ from aiogram.types import (
     Message,
 )
 from keyboards.reply import to_admin_menu
-# from images import AdminBotImgs
-from keyboards.inline import admin_command_keyboard
+from admin_images import AdminBotImgs
+from keyboards.inline import (
+    admin_command_keyboard,
+    admin_managemenet_menu,
+)
 from phrases import (
     AdminMenu,
     DefaultPhrases,
@@ -27,17 +30,22 @@ class AdminPanelService:
         self._message_service = message_service
         self.cache = cache_repo
 
-    async def welcome_text(self, message: Message) -> None:
+    async def welcome_text(self, message: Message, is_admin: bool) -> None:
         try:
-            is_admin = await self.check_is_admin_in_cache(message.from_user.id)
-
             if is_admin:
-                await self._message_service.send_simple_message(
-                    message_text=AdminMenu.admin_menu,
+                await self._message_service.send_message_with_image(
+                    mesage_text=AdminMenu.admin_menu,
                     chat_id=message.chat.id,
+                    path=Path(AdminBotImgs.welcome_img),
                     keyboard=admin_command_keyboard(),
                 )
-        except PermissionError:
+            else:
+                await self._message_service.send_simple_message(
+                    message_text=DefaultPhrases.permission_error,
+                    chat_id=message.chat.id,
+                )
+        except Exception as e:
+            print(f"❌ Error in welcome_text: {e}")
             await self._message_service.send_simple_message(
                 message_text=DefaultPhrases.permission_error,
                 chat_id=message.chat.id,
@@ -57,7 +65,11 @@ class AdminPanelService:
             keyboard=admin_command_keyboard(),
         )
 
-    async def change_yuan_action(self, callback: CallbackQuery, state: FSMContext):
+    async def change_yuan_action(
+        self,
+        callback: CallbackQuery,
+        state: FSMContext,
+    ):
         current_rate = await self.cache.get_yuan_rate(CacheKey.YUAN_RATE_KEY)
 
         await self._message_service.send_simple_message(
@@ -66,4 +78,12 @@ class AdminPanelService:
             keyboard=to_admin_menu(),
         )
 
-    def _filter_rate_action(self, user_message_rate: int | float) -> bool: ...
+    async def open_admin_control(
+        self,
+        callback: CallbackQuery,
+    ):
+        await self._message_service.send_simple_message(
+            message_text=AdminMenu.control_admins,
+            chat_id=callback.from_user.id,
+            keyboard=admin_managemenet_menu(),
+        )
