@@ -11,11 +11,25 @@ from aiogram.types import (
     Message,
     TelegramObject,
 )
+from services import (
+    AdminPanelService,
+    MessageService,
+)
+from shared.shared_repos import CacheRepo
 
 
 class AdminMiddleware(BaseMiddleware):
-    def __init__(self, admin_ids: list[int]) -> None:
+    def __init__(
+        self,
+        admin_ids: list[int],
+        admin_panel_service: AdminPanelService,
+        message_service: MessageService,
+        cache_repo: CacheRepo,
+    ) -> None:
         self.admin_ids = admin_ids
+        self.admin_panel_service = admin_panel_service
+        self.message_service = message_service
+        self.cache_repo = cache_repo
 
     async def __call__(
         self,
@@ -30,5 +44,9 @@ class AdminMiddleware(BaseMiddleware):
                 data["is_admin"] = False
         else:
             data["is_admin"] = False
+
+        data["admin_service"] = self.admin_panel_service
+        data["message_service"] = self.message_service
+        data["cache_repo"] = self.cache_repo
 
         return await handler(event, data)

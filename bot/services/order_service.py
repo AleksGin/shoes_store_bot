@@ -10,11 +10,12 @@ from keyboards import (
     view_another_order_button,
     view_another_order_button_if_value,
 )
-from phrases import CacheKey, Order
+from phrases import Order
 from repository import (
     AsyncGoogleSheetsService,
 )
 
+from shared.shared_pharses import CacheKey
 from shared.shared_repos import CacheRepo
 
 from .message_service import MessageService

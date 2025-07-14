@@ -5,7 +5,7 @@ from aiogram.types import (
     Message,
 )
 from keyboards.reply import to_admin_menu
-from images import AdminBotImgs
+# from images import AdminBotImgs
 from keyboards.inline import admin_command_keyboard
 from phrases import (
     AdminMenu,
@@ -32,10 +32,9 @@ class AdminPanelService:
             is_admin = await self.check_is_admin_in_cache(message.from_user.id)
 
             if is_admin:
-                await self._message_service.send_message_with_image(
-                    mesage_text=AdminMenu.admin_menu,
+                await self._message_service.send_simple_message(
+                    message_text=AdminMenu.admin_menu,
                     chat_id=message.chat.id,
-                    path=Path(AdminBotImgs.welcome_img),
                     keyboard=admin_command_keyboard(),
                 )
         except PermissionError:

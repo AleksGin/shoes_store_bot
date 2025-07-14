@@ -2,13 +2,13 @@ import asyncio
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from phrases import (
-    CacheKey,
     Order,
 )
 from repository import (
     AsyncGoogleSheetsService,
 )
 
+from shared.shared_pharses import CacheKey
 from shared.shared_repos import CacheRepo
 
 from .order_service import OrderService

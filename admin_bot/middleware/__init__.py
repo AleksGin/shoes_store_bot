@@ -1,4 +1,5 @@
-from aiogram import BaseMiddleware
+__all__ = (
+    "AdminMiddleware",
+)
 
-class AdminMiddleware(BaseMiddleware):
-    def 
+from .admin_middleware import AdminMiddleware

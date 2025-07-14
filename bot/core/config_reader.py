@@ -1,11 +1,16 @@
-from pydantic import BaseModel, SecretStr
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import (
+    BaseModel,
+    SecretStr,
+)
+from pydantic_settings import (
+    BaseSettings,
+    SettingsConfigDict,
+)
 
 
 class CacheConfig(BaseModel):
     url: str
     password: str
-
 
 
 class BotConfig(BaseModel):

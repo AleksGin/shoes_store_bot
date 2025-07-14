@@ -6,6 +6,7 @@ from aiogram.types import (
     InlineKeyboardMarkup,
     ReplyKeyboardMarkup,
 )
+from aiogram.types.message import Message
 
 
 class MessageService:
@@ -30,8 +31,8 @@ class MessageService:
         chat_id: int,
         path: Path,
         keyboard: ReplyKeyboardMarkup | InlineKeyboardMarkup | None = None,
-    ) -> None:
-        await self._sender.send_photo(
+    ) -> Message:
+        return await self._sender.send_photo(
             caption=mesage_text,
             chat_id=chat_id,
             photo=FSInputFile(path=path),

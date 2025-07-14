@@ -9,6 +9,8 @@ services:
       - redis
     volumes:
       - ${IMAGE_CONFIG__PATH}:/cros_bot/cros_photo
+    env_file:
+      - .env
     environment:
       - PATH_IMAGES=/cros_bot/cros_photo
       - TZ=Europe/Moscow
@@ -26,6 +28,8 @@ services:
       - cros_bot
     volumes:
       - ${ADMIN_IMAGE_CONFIG__PATH}:/admin_bot/images
+    env_file:
+      - .env
     environment:
       - ADMIN_IMAGE_CONFIG__PATH=/admin_bot/images
       - TZ=Europe/Moscow
@@ -37,7 +41,7 @@ services:
     container_name: cros_db
     restart: always
     environment:
-      - CACHE_CONFIG__PASSWORD=${CACHE_CONFIG__PASSWORD}
+      - REDIS_PASSWORD=${CACHE_CONFIG__PASSWORD}
     volumes:
       - redis-data:/data
     command: ["redis-server", "--requirepass", "${CACHE_CONFIG__PASSWORD}"]
@@ -50,4 +54,3 @@ networks:
 
 volumes:
   redis-data:
-

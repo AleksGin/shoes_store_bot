@@ -4,7 +4,7 @@ from redis.asyncio import (
     ConnectionPool,
     Redis,
 )
-from shared_pharses import (
+from shared.shared_pharses import (
     CacheErrors,
     CacheKey,
     CacheTTL,
@@ -132,7 +132,7 @@ class CacheRepo:
             result = await redis.get(key)
             if result is not None:
                 try:
-                    return float(result.decocde("utf-8"))
+                    return float(result.decode("utf-8"))
                 except (ValueError, AttributeError):
                     raise ValueError(CacheErrors.uncorrect_value)
             return default_rate

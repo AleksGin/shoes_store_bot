@@ -3,7 +3,6 @@ from aiogram import Bot
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.redis import RedisStorage
-from phrases import CacheTTL
 from repository import (
     AsyncGoogleSheetsService,
     CrossworldTableRepo,
@@ -17,30 +16,27 @@ from services import (
 )
 
 from core.config_reader import config
-from shared.shared_repos import CacheRepo
+from shared.shared_pharses import CacheTTL
+from shared.shared_service_factory import SharedServiceFactory
 
 
 class ServiceFactory:
     @staticmethod
     async def create_services():
+        cache_repo = await SharedServiceFactory.get_cache_repo()
+        redis_client = await SharedServiceFactory.get_redis_client()
+
         bot = Bot(
             token=config.bot_config.token_bot.get_secret_value(),
             default=DefaultBotProperties(parse_mode=ParseMode.HTML),
         )
-
-        pool = redis.ConnectionPool.from_url(
-            url=config.cache_config.url,
-        )
-
-        redis_client = await redis.from_url(url=config.cache_config.url)
-
-        cache_repo = CacheRepo(pool=pool, redis=redis_client)
 
         storage = RedisStorage(
             redis=redis_client,
             state_ttl=CacheTTL.week,
             data_ttl=CacheTTL.week,
         )
+
         message_service = MessageService(bot=bot)
 
         cross_table = CrossworldTableRepo(
