@@ -10,11 +10,18 @@ class AdminBotConfig(BaseModel):
 class AdminImgConfig(BaseModel):
     path: str
     
+class YuanRateConfig(BaseModel):
+    yuan_rate: int | float
+
+class ClosestDateConfig(BaseModel):
+    date: str
 
 
 class Config(BaseSettings):
     admin_bot_config: AdminBotConfig
     admin_image_config: AdminImgConfig
+    yuan_rate_config: YuanRateConfig
+    closest_date_config: ClosestDateConfig
 
     model_config = SettingsConfigDict(
         env_file=(".env.template", ".env"),

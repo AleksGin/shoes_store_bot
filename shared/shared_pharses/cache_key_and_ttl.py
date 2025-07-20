@@ -4,6 +4,7 @@ class CacheKey:
     ADMINS_KEY: str = "system:admins"
     YUAN_RATE_KEY: str = "system:yuan_rate"
     CLOSEST_DATE_KEY: str = "system:date"
+    ADMIN_LOGS_KEY: str = "admin:logs"
     match_for_key: str = ORDER_STATUS_KEY.format("*")
     match_tracking_key: str = TRACKING_USER_ID_KEY.format("*", "*")
     match_for_user_to_orders: str = "tracking_user:{}:order:*"

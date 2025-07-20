@@ -13,6 +13,7 @@ from keyboards import (
     delete_tracking_orders_buttons,
     to_welcome_keyboard,
 )
+from shared.shared_pharses import CacheKey
 from phrases import Order
 from shared.shared_repos import CacheRepo
 
@@ -34,6 +35,15 @@ class CacheService:
 
     def set_order_service(self, order_service: "OrderService") -> None:
         self.order_service = order_service
+        
+    async def get_rate_from_cache(self) -> float:
+        
+        result = await self.cache_repo.get_yuan_rate(CacheKey.YUAN_RATE_KEY)
+        return result
+    
+    async def get_closest_date(self) -> str:
+        result = await self.cache_repo.get_closest_date(CacheKey.CLOSEST_DATE_KEY)
+        return result
 
     async def set_info_into_cache(
         self,

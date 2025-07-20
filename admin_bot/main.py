@@ -14,8 +14,8 @@ from services import (
     MessageService,
 )
 
-from shared.shared_service_factory import SharedServiceFactory
-from shared.shared_pharses import CacheKey
+from shared import SharedServiceFactory
+from shared import CacheSetup
 
 from middleware import AdminMiddleware
 from handlers import admin_handler_router
@@ -36,37 +36,12 @@ async def main() -> None:
         cache_repo=cache_repo,
     )
 
-    admin_ids = []
-    if settings.admin_bot_config.initial_ids:
-        try:
-            admin_ids = [
-                int(x.strip())
-                for x in settings.admin_bot_config.initial_ids.split(",")
-                if x.strip()
-            ]
-        except ValueError:
-            logging.error("Ошибка в парсинге admin IDs")
-            admin_ids = []
-
-    if settings.admin_bot_config.super_admin_id:
-        try:
-            super_admin_id = int(settings.admin_bot_config.super_admin_id)
-            if super_admin_id not in admin_ids:
-                admin_ids.append(super_admin_id)
-        except ValueError:
-            logging.error("Ошибка в парсинге super admin ID")
-
-    for admin_id in admin_ids:
-        try:
-            await cache_repo.add_admin_id(
-                CacheKey.ADMINS_KEY,
-                admin_id,
-            )
-            logging.info(f"Admin ID {admin_id} added to cache")
-        except Exception as e:
-            logging.error(f"Failed to add admin {admin_id}: {e}")
-
     dp = Dispatcher()
+
+    admin_ids = await CacheSetup(
+        cache_repo=cache_repo,
+        settings=settings,
+    )
 
     admin_middleware = AdminMiddleware(
         admin_ids=admin_ids,

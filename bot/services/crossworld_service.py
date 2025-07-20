@@ -88,18 +88,24 @@ class CrossworldService:
         return await self.open_main(message=message)
 
     async def send_rate(self, message: Message) -> Message | None:
+        
+        yuan_rate = await self.cache_service.get_rate_from_cache()
+        
         await self.message_service.send_message(
             message=message,
-            text=Misc.today_rate_text,
+            text=Misc.today_rate_text.format(str(yuan_rate)),
             path=PathsImages.YUAN_RATES,
             chat_id=message.chat.id,
         )
         return await self.open_main(message=message)
 
     async def send_nearest_date(self, message: Message) -> Message | None:
+        
+        date = await self.cache_service.get_closest_date()
+        
         await self.message_service.send_message(
             message=message,
-            text=Misc.nearest_date_text,
+            text=Misc.nearest_date_text.format(date),
         )
 
     async def send_delivery_info(self, message: Message) -> Message | None:
@@ -296,9 +302,11 @@ class CrossworldService:
             fixed_price = ClothesPrice.clothes_prices.get(clothe_name)
             delivery_price = ClothesPrice.clothes_delivery_price.get(clothe_name)
             comission = ClothesPrice.clothes_commission.get(clothe_name)
+            
+            rate = await self.cache_service.get_rate_from_cache()
 
             if fixed_price:
-                result = (amount * Misc.rate) + fixed_price
+                result = (amount * rate) + fixed_price
 
             calculating_message = await self.message_service.send_message(
                 message=message,
@@ -310,6 +318,7 @@ class CrossworldService:
                 message=message,
                 text=Order.total_amount.format(
                     int(result),
+                    rate,
                     delivery_price,
                     comission,
                 ),

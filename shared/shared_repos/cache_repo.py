@@ -1,9 +1,17 @@
-from typing import List
+from datetime import datetime
+import json
+import logging
+from typing import (
+    Any,
+    List,
+    Optional,
+)
 
 from redis.asyncio import (
     ConnectionPool,
     Redis,
 )
+
 from shared.shared_pharses import (
     CacheErrors,
     CacheKey,
@@ -185,12 +193,10 @@ class CacheRepo:
             result = await redis.sismember(key, user_id)  # type: ignore
             return result > 0
 
-    async def get_closest_day(self, key: str) -> str | None:
+    async def get_closest_date(self, key: str) -> str:
         async with Redis.from_pool(connection_pool=self.pool) as redis:
             result = await redis.get(key)
-            if result is not None:
-                return result.decode("utf-8")
-            return None
+            return result.decode("utf-8")
 
     async def set_closest_day(
         self,
@@ -201,3 +207,62 @@ class CacheRepo:
             result = await redis.set(key, date)
             await redis.persist(key)
             return result is not None
+
+    async def add_admin_log(
+        self,
+        action: str,
+        admin_id: int,
+        new_value: Optional[str] = None,
+        max_logs: int = 5,
+    ) -> None:
+        async with Redis.from_pool(connection_pool=self.pool) as redis:
+            try:
+                log_entry: dict[str, Any] = {
+                    "action": action,
+                    "admin_id": admin_id,
+                    "timestamp": datetime.now().strftime("%d.%m.%Y %H:%M"),
+                }
+
+                if new_value is not None:
+                    log_entry["new_value"] = new_value
+
+                existing_logs_json = await redis.get(CacheKey.ADMIN_LOGS_KEY)
+                if existing_logs_json:
+                    logs = json.loads(existing_logs_json.decode("utf-8"))
+                else:
+                    logs = []
+
+                logs.insert(0, log_entry)
+
+                logs = logs[:max_logs]
+
+                await redis.set(
+                    CacheKey.ADMIN_LOGS_KEY,
+                    json.dumps(logs, ensure_ascii=False),
+                )
+                await redis.persist(CacheKey.ADMIN_LOGS_KEY)
+            except Exception as e:
+                logging.info(f"При добавлении логов что-то пошло не так: {e}")
+
+    async def get_admin_logs(self, limit: int = 5) -> List[dict]:
+        async with Redis.from_pool(connection_pool=self.pool) as redis:
+            try:
+                logs_json = await redis.get(CacheKey.ADMIN_LOGS_KEY)
+                if logs_json:
+                    logs = json.loads(logs_json.decode("utf-8"))
+                    return logs[:limit]
+                return []
+            except Exception:
+                return []
+
+    async def send_bot_command(self, command_data: dict) -> bool:
+        try:
+            async with Redis.from_pool(connection_pool=self.pool) as redis:
+                result = await redis.publish(
+                    "bot_commands",
+                    json.dumps(command_data),
+                )
+
+                return result > 0
+        except Exception:
+            return False
