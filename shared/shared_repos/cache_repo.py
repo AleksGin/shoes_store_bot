@@ -196,6 +196,8 @@ class CacheRepo:
     async def get_closest_date(self, key: str) -> str:
         async with Redis.from_pool(connection_pool=self.pool) as redis:
             result = await redis.get(key)
+            if result is None:
+                return "01.01.2000" 
             return result.decode("utf-8")
 
     async def set_closest_day(
