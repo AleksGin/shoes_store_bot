@@ -21,7 +21,10 @@ async def main() -> None:
         cache_service,
         cross_service,
         update_service,
+        command_handler,
     ) = await ServiceFactory.create_services()
+
+    await command_handler.start_listening()
 
     update_service.start_scheduler()
 
@@ -59,5 +62,8 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+    logging.basicConfig(
+        level=logging.INFO,
+        stream=sys.stdout,
+    )
     asyncio.run(main())

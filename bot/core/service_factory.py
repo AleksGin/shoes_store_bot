@@ -18,6 +18,7 @@ from services import (
 from core.config_reader import config
 from shared.shared_pharses import CacheTTL
 from shared.shared_service_factory import SharedServiceFactory
+from services import BotCommandHandler
 
 
 class ServiceFactory:
@@ -30,6 +31,8 @@ class ServiceFactory:
             token=config.bot_config.token_bot.get_secret_value(),
             default=DefaultBotProperties(parse_mode=ParseMode.HTML),
         )
+
+        command_handler = BotCommandHandler(redis_client=redis_client)
 
         storage = RedisStorage(
             redis=redis_client,
@@ -84,4 +87,5 @@ class ServiceFactory:
             cache_service,
             cross_service,
             update_service,
+            command_handler,
         )

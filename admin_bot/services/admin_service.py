@@ -296,7 +296,7 @@ class AdminPanelService:
                 action=DefaultPhrases.action_name_restart_bot,
                 admin_id=callback.from_user.id,
             )
-            await callback.message.answer(text="🔄Отпрваляю команду на перезапуск...\n⏳ Ожидайте")  # type: ignore
+            initial_message = await callback.message.answer(text="🔄Отпрваляю команду на перезапуск...\n⏳ Ожидайте")  # type: ignore
 
             command_data = {
                 "command": "restart",
@@ -308,7 +308,7 @@ class AdminPanelService:
 
             result_message = self._status_formatter(success)
 
-            await callback.message.edit_text(text=result_message)  # type: ignore
+            await initial_message.edit_text(text=result_message)  # type: ignore
 
         except Exception as e:
             print(f"❌ Error restarting main bot: {e}")
